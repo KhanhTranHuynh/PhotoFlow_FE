@@ -1,0 +1,16 @@
+.main-caro {
+  .swiper-button-next:after,
+  .swiper-button-prev:after {
+    font-family: unset !important;
+    @apply rtl:rotate-180;
+    filter: brightness(0) saturate(100%) invert(50%) sepia(100%) saturate(500%) hue-rotate(200deg);
+  }
+
+  .swiper-button-next:after {
+    content: url("https://api.iconify.design/heroicons-outline/chevron-right.svg?width=24");
+  }
+
+  .swiper-button-prev:after {
+    content: url("https://api.iconify.design/heroicons-outline/chevron-left.svg?width=24");
+  }
+}

@@ -1,0 +1,41 @@
+import logger from "@/helpers/logger";
+import http from "@/api/http";
+
+export async function login({ username, password }) {
+  const body = {
+    username: username.trim(),
+    password: password.trim(),
+  };
+
+  try {
+    logger.info("[login] Request body:", body);
+    const response = await http.post("/auth/login", body);
+    logger.info("[login] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[login] Error:", err?.response?.data || err);
+    throw err;
+  }
+}
+
+export async function logout() {
+  try {
+    const response = await http.post("/auth/logout", {});
+    logger.info("[logout] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[logout] Error:", err?.response?.data || err);
+    throw err;
+  }
+}
+
+export async function getProfile() {
+  try {
+    const response = await http.post("/profile/me", {});
+    logger.info("[getProfile] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[getProfile] Error:", err?.response?.data || err);
+    throw err;
+  }
+}
