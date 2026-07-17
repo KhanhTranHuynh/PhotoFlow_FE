@@ -10,7 +10,7 @@ const themeConfig = {
     semiDarkMode: false,
     skin: "default",
     contentWidth: "full",
-    type: "horizontal",
+    type: "vertical",
     navBarType: "sticky",
     footerType: "static",
     isMonochrome: false,
