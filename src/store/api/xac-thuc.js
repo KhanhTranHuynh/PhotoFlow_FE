@@ -3,13 +3,13 @@ import http from "@/api/http";
 
 export async function login({ username, password }) {
   const body = {
-    username: username.trim(),
-    password: password.trim(),
+    so_dien_thoai: username.trim(),
+    mat_khau: password.trim(),
   };
 
   try {
     logger.info("[login] Request body:", body);
-    const response = await http.post("/auth/login", body);
+    const response = await http.post("/public/xac-thuc/dang-nhap", body);
     logger.info("[login] Response:", response.data);
     return response.data;
   } catch (err) {
