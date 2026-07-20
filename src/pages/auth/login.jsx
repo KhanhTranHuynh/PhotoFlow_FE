@@ -7,7 +7,7 @@ import useDarkMode from "@/hooks/useDarkMode";
 // image import
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
 import Logo from "@/assets/images/logo/logo.svg";
-import bgImage from "@/assets/images/all-img/login-bg.png";
+import bgImage from "@/assets/images/all-img/login-bg-news.png";
 
 const AlbumIcon = () => (
   <svg
