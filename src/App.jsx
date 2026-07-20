@@ -89,14 +89,10 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNotificationSocket } from "@/hooks/useNotificationSocket";
 import { useDocumentTitleNotification } from "@/hooks/useDocumentTitleNotification";
-import { useChatSocket } from "@/hooks/useChatSocket";
-import { useChatInit } from "@/hooks/useChatInit";
 import { getUserRoleCodes } from "@/utils/getUserRoleCodes";
 import { unlockAudio } from "@/helpers/notificationSound";
 
 import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
-
-import ChatBubble from "@/pages/app/chat/ChatBubble";
 
 // home pages  & dashboard
 
@@ -108,7 +104,6 @@ const Error = lazyRetry(() => import("./pages/404"));
 
 import Layout from "./layout/Layout";
 
-const ChatPage = lazyRetry(() => import("./pages/app/chat"));
 import Loading from "@/components/Loading";
 import { getAuthRedirectPath } from "@/utils/getAuthRedirectPath";
 
@@ -129,6 +124,7 @@ function RootRedirect() {
     />
   );
 }
+
 function ErrorFallback({ error, resetErrorBoundary }) {
   useEffect(() => {
     console.error("[ErrorBoundary]", {
@@ -170,9 +166,7 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 }
 
 function App() {
-  useNotificationSocket();
-  useChatSocket();
-  useChatInit();
+  // useNotificationSocket();
 
   const unreadCount = useSelector(
     (state) => state.notification.items?.unread_count ?? 0,
@@ -184,10 +178,6 @@ function App() {
 
   const authInitialized = useSelector((state) => state.auth.authInitialized);
   const user = useSelector((state) => state.auth.user);
-  const roleCodes = getUserRoleCodes(user);
-
-  const isCustomer = roleCodes.includes("khach_hang");
-  const chatBubbleRole = isCustomer ? "customer" : "staff";
 
   useEffect(() => {
     const token = getCookie("accessToken");
@@ -238,12 +228,6 @@ function App() {
     return <Loading />;
   }
 
-  // Chỉ hiện ChatBubble khi đã đăng nhập và không ở trang login/sso/404/chat
-  const hiddenChatBubblePaths = ["/login", "/sso-entry", "/404", "/chat"];
-  const shouldShowChatBubble =
-    !!user &&
-    !hiddenChatBubblePaths.some((p) => location.pathname.startsWith(p));
-
   return (
     <main className="App relative">
       {/* <ErrorBoundary FallbackComponent={ErrorFallback}> */}
@@ -269,10 +253,6 @@ function App() {
             }
           />
 
-          <Route path="/*" element={<Layout />}>
-            <Route path="chat" element={<ChatPage />} />
-            <Route path="*" element={<Navigate to="/404" />} />
-          </Route>
           <Route
             path="/404"
             element={
@@ -291,7 +271,6 @@ function App() {
             {/* App pages */}
             <Route path="todo" element={<TodoPage />} />
             <Route path="email" element={<EmailPage />} />
-            <Route path="chat" element={<ChatPage />} />
             <Route path="projects" element={<ProjectPostPage />} />
             <Route path={"projects/:id"} element={<ProjectDetailsPage />} />
             <Route path="project-details" element={<ProjectDetailsPage />} />
@@ -355,8 +334,6 @@ function App() {
         </Routes>
       </Suspense>
       {/* </ErrorBoundary> */}
-
-      {shouldShowChatBubble && <ChatBubble role={chatBubbleRole} />}
     </main>
   );
 }
