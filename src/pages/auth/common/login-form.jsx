@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchProfile,
@@ -18,9 +18,44 @@ import { getUserRoleCodes } from "@/utils/getUserRoleCodes";
 const schema = yup
   .object({
     so_dien_thoai: yup.string().required("Số điện thoại không được để trống"),
-    mat_khau: yup.string().required("mat_khau không được để trống"),
+    mat_khau: yup.string().required("Mật khẩu không được để trống"),
   })
   .required();
+
+const PhoneIcon = ({ className = "w-[18px] h-[18px]" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true">
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      d="M3 5.5C3 4.12 4.12 3 5.5 3H8l2 5-2.5 1.5a11 11 0 005 5L14 12l5 2v2.5c0 1.38-1.12 2.5-2.5 2.5C9.16 19 5 14.84 5 9.5 5 8.12 3 5.5 3 5.5z"
+    />
+  </svg>
+);
+
+const LockIcon = ({ className = "w-[18px] h-[18px]" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true">
+    <rect x="4.5" y="10.5" width="15" height="9.5" rx="1.5" strokeWidth="1.5" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.5"
+      d="M7.5 10.5V7.75a4.5 4.5 0 019 0v2.75"
+    />
+  </svg>
+);
 
 const EyeIcon = ({ className = "w-5 h-5" }) => (
   <svg
@@ -90,6 +125,7 @@ const LoginForm = () => {
 
   const [alert, setAlert] = useState({ visible: false, message: "" });
   const [showmat_khau, setShowmat_khau] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [ssoProcessing, setSsoProcessing] = useState(false);
 
   const formRef = useRef(null);
@@ -223,7 +259,7 @@ const LoginForm = () => {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-8 pt-4">
         <svg
-          className="animate-spin h-8 w-8 text-primary"
+          className="animate-spin h-8 w-8 text-primary-600"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -258,27 +294,37 @@ const LoginForm = () => {
       <form
         ref={formRef}
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4 p-8 pt-4"
+        className="space-y-5"
         noValidate>
         <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Số điện thoại
+          </label>
           <Controller
             name="so_dien_thoai"
             control={control}
             render={({ field }) => (
               <div>
-                <input
-                  {...field}
-                  type="text"
-                  placeholder="Số điện thoại"
-                  className={`w-full h-[48px] px-3 rounded border ${
-                    errors.so_dien_thoai ? "border-red-500" : "border-slate-200"
-                  }`}
-                  onFocus={() => setAlert({ visible: false, message: "" })}
-                  onKeyDown={onKeyDown}
-                  onCompositionStart={() => (composing.current = true)}
-                  onCompositionEnd={() => (composing.current = false)}
-                  autoComplete="so_dien_thoai"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <PhoneIcon />
+                  </span>
+                  <input
+                    {...field}
+                    type="text"
+                    placeholder="Nhập số điện thoại của bạn"
+                    className={`w-full h-12 pl-10 pr-3 rounded-xl border text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 transition ${
+                      errors.so_dien_thoai
+                        ? "border-red-500"
+                        : "border-slate-200"
+                    }`}
+                    onFocus={() => setAlert({ visible: false, message: "" })}
+                    onKeyDown={onKeyDown}
+                    onCompositionStart={() => (composing.current = true)}
+                    onCompositionEnd={() => (composing.current = false)}
+                    autoComplete="tel"
+                  />
+                </div>
                 <p
                   className={`mt-1 text-sm text-red-600 ${errors.so_dien_thoai ? "" : "invisible"}`}>
                   {errors.so_dien_thoai?.message || "\u00A0"}
@@ -289,35 +335,43 @@ const LoginForm = () => {
         </div>
 
         <div>
+          <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+            Mật khẩu
+          </label>
           <Controller
             name="mat_khau"
             control={control}
             render={({ field }) => (
-              <div className="relative">
-                <input
-                  {...field}
-                  ref={(el) => {
-                    field.ref(el);
-                    mat_khauRef.current = el;
-                  }}
-                  type={showmat_khau ? "text" : "mat_khau"}
-                  placeholder="mat_khau"
-                  className={`mat_khau-toggle-input w-full h-[48px] pr-10 pl-3 rounded border ${
-                    errors.mat_khau ? "border-red-500" : "border-slate-200"
-                  }`}
-                  onFocus={() => setAlert({ visible: false, message: "" })}
-                  onKeyDown={onKeyDown}
-                  onCompositionStart={() => (composing.current = true)}
-                  onCompositionEnd={() => (composing.current = false)}
-                  autoComplete="current-mat_khau"
-                />
-                <button
-                  type="button"
-                  onClick={toggleShowmat_khau}
-                  className="absolute right-2 top-1/3 -translate-y-1/2 inline-flex items-center justify-center p-1 leading-none text-slate-600 hover:text-slate-900"
-                  aria-label={showmat_khau ? "Hide mat_khau" : "Show mat_khau"}>
-                  {showmat_khau ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
+              <div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <LockIcon />
+                  </span>
+                  <input
+                    {...field}
+                    ref={(el) => {
+                      field.ref(el);
+                      mat_khauRef.current = el;
+                    }}
+                    type={showmat_khau ? "text" : "password"}
+                    placeholder="Nhập mật khẩu của bạn"
+                    className={`mat_khau-toggle-input w-full h-12 pl-10 pr-10 rounded-xl border text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500 transition ${
+                      errors.mat_khau ? "border-red-500" : "border-slate-200"
+                    }`}
+                    onFocus={() => setAlert({ visible: false, message: "" })}
+                    onKeyDown={onKeyDown}
+                    onCompositionStart={() => (composing.current = true)}
+                    onCompositionEnd={() => (composing.current = false)}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleShowmat_khau}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center p-1 leading-none text-slate-400 hover:text-slate-600"
+                    aria-label={showmat_khau ? "Ẩn mật khẩu" : "Hiện mật khẩu"}>
+                    {showmat_khau ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
                 <p
                   className={`mt-1 text-sm text-red-600 ${errors.mat_khau ? "" : "invisible"}`}>
                   {errors.mat_khau?.message || "\u00A0"}
@@ -327,11 +381,28 @@ const LoginForm = () => {
           />
         </div>
 
+        <div className="flex items-center justify-between text-sm !mt-2">
+          <label className="flex items-center gap-2 text-slate-700 cursor-pointer select-none">
+            {/* <input
+              type="checkbox"
+              checked={remember}
+              onChange={() => setRemember((v) => !v)}
+              className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500/40"
+            />
+            Ghi nhớ đăng nhập */}
+          </label>
+          <Link
+            to="/forgot-password"
+            className="font-semibold text-primary-700 hover:underline">
+            Quên mật khẩu?
+          </Link>
+        </div>
+
         <button
           type="submit"
-          className="btn btn-primary block w-full text-center"
-          disabled={loading}>
-          Đăng nhập
+          disabled={loading}
+          className="w-full h-12 rounded-xl font-semibold text-white shadow-sm transition bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 disabled:opacity-60 disabled:cursor-not-allowed">
+          {loading ? "Đang đăng nhập…" : "Đăng nhập"}
         </button>
       </form>
     </>
