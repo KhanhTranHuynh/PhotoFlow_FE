@@ -20,7 +20,7 @@ export async function login({ so_dien_thoai, mat_khau }) {
 
 export async function logout() {
   try {
-    const response = await http.post("/auth/logout", {});
+    const response = await http.post("/public/xac-thuc/dang-xuat", {});
     logger.info("[logout] Response:", response.data);
     return response.data;
   } catch (err) {
