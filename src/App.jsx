@@ -98,6 +98,7 @@ import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
 
 const Login = lazyRetry(() => import("./pages/auth/login"));
 const Register = lazyRetry(() => import("./pages/auth/register"));
+const ForgotPassword = lazyRetry(() => import("./pages/auth/forgot-password"));
 
 const SsoEntry = lazyRetry(() => import("./pages/SsoEntry/SsoEntry"));
 
@@ -259,6 +260,15 @@ function App() {
             element={
               <Suspense fallback={<Loading />}>
                 <Register />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/forgot-password"
+            element={
+              <Suspense fallback={<Loading />}>
+                <ForgotPassword />
               </Suspense>
             }
           />
