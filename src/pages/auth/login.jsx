@@ -76,7 +76,8 @@ const login2 = () => {
         <div
           className="relative w-full lg:w-[65%] min-h-[380px] lg:min-h-screen bg-cover bg-no-repeat bg-center flex flex-col justify-center px-10 sm:px-14 lg:px-16 py-16"
           style={{
-            backgroundImage: `linear-gradient(120deg, rgba(250,240,222,0.55), rgba(250,240,222,0.15)), url(${bgImage})`,
+            backgroundImage: `linear-gradient(120deg, #FCF8F3, #B27A2E 70%), url(${bgImage})`,
+            backgroundBlendMode: "overlay",
           }}>
           <Link to="/" className="absolute top-8 left-10 sm:left-14 lg:left-16">
             <img src={isDark ? LogoWhite : Logo} alt="logo" className="h-8" />
