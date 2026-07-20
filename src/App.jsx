@@ -97,6 +97,7 @@ import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
 // home pages  & dashboard
 
 const Login = lazyRetry(() => import("./pages/auth/login"));
+const Register = lazyRetry(() => import("./pages/auth/register"));
 
 const SsoEntry = lazyRetry(() => import("./pages/SsoEntry/SsoEntry"));
 
@@ -249,6 +250,15 @@ function App() {
             element={
               <Suspense fallback={<Loading />}>
                 <Login />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/register"
+            element={
+              <Suspense fallback={<Loading />}>
+                <Register />
               </Suspense>
             }
           />

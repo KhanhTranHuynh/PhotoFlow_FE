@@ -39,3 +39,15 @@ export async function getProfile() {
     throw err;
   }
 }
+
+export async function dangKyStudio(body) {
+  try {
+    logger.info("[dangKyStudio] Request body:", body);
+    const response = await http.post("/public/xac-thuc/dang-ky-studio", body);
+    logger.info("[dangKyStudio] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[dangKyStudio] Error:", err?.response?.data || err);
+    throw err;
+  }
+}

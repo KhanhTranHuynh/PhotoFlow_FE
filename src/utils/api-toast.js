@@ -3,13 +3,13 @@ import { toast } from "react-toastify";
 const DEFAULT_POSITION = { position: "top-right" };
 
 export const getApiResultMeta = (response) => {
-  const errorCodeRaw = response?.errorCode ?? response?.data?.errorCode;
+  const codeRaw = response?.code ?? response?.data?.code;
   const message = response?.message || response?.data?.message || "";
 
-  const parsed = Number(errorCodeRaw);
-  const errorCode = Number.isFinite(parsed) ? parsed : null;
+  const parsed = Number(codeRaw);
+  const code = Number.isFinite(parsed) ? parsed : null;
 
-  return { errorCode, message };
+  return { code, message };
 };
 
 export const notifyApiByErrorCode = (response, options = {}) => {
@@ -22,12 +22,12 @@ export const notifyApiByErrorCode = (response, options = {}) => {
     toastOptions = DEFAULT_POSITION,
   } = options;
 
-  const { errorCode, message } = getApiResultMeta(response);
+  const { code, message } = getApiResultMeta(response);
 
   // Rule:
-  // - errorCode > 0 => success
-  // - errorCode <= 0 OR missing/invalid => error
-  const isSuccess = typeof errorCode === "number" && errorCode > 0;
+  // - code > 0 => success
+  // - code <= 0 OR missing/invalid => error
+  const isSuccess = typeof code === "number" && code > 0;
 
   const finalMessage =
     overrideMessage || message || (isSuccess ? successMessage : errorMessage);

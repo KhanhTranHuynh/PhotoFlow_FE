@@ -7,7 +7,8 @@ import useDarkMode from "@/hooks/useDarkMode";
 // image import
 import LogoWhite from "@/assets/images/logo/logo-white.svg";
 import Logo from "@/assets/images/logo/logo.svg";
-import bgImage from "@/assets/images/all-img/login-bg-news.png";
+import bgImage1 from "@/assets/images/all-img/login-bg-1.png";
+import bgImage2 from "@/assets/images/all-img/login-bg-2.png";
 
 const AlbumIcon = () => (
   <svg
@@ -76,8 +77,11 @@ const login2 = () => {
         <div
           className="relative w-full lg:w-[65%] min-h-[380px] lg:min-h-screen bg-cover bg-no-repeat bg-center flex flex-col justify-center px-10 sm:px-14 lg:px-16 py-16"
           style={{
-            backgroundImage: `linear-gradient(120deg, #FCF8F3, #B27A2E 70%), url(${bgImage})`,
-            backgroundBlendMode: "overlay",
+            backgroundImage: `linear-gradient(120deg, rgba(252,248,243,0.9), rgba(178,122,46,0.25) 60%), url(${bgImage2}), url(${bgImage1})`,
+            backgroundSize: "cover, cover, cover",
+            backgroundPosition: "center, center top, center",
+            backgroundRepeat: "no-repeat, no-repeat, no-repeat",
+            backgroundBlendMode: "normal, soft-light, normal",
           }}>
           <Link to="/" className="absolute top-8 left-10 sm:left-14 lg:left-16">
             <img src={isDark ? LogoWhite : Logo} alt="logo" className="h-8" />
