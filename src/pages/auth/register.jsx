@@ -102,6 +102,7 @@ const initialForm = {
   ten_studio: "",
   ho_ten_chu_studio: "",
   so_dien_thoai: "",
+  email: "",
   mat_khau: "",
 };
 
@@ -141,6 +142,12 @@ const register2 = () => {
       newErrors.so_dien_thoai = "Số điện thoại không hợp lệ";
     }
 
+    if (!form.email.trim()) {
+      newErrors.email = "Vui lòng nhập email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      newErrors.email = "Email không hợp lệ";
+    }
+
     if (!form.mat_khau) {
       newErrors.mat_khau = "Vui lòng nhập mật khẩu";
     } else if (form.mat_khau.length < 6) {
@@ -166,6 +173,7 @@ const register2 = () => {
       ten_studio: form.ten_studio.trim(),
       ho_ten_chu_studio: form.ho_ten_chu_studio.trim(),
       so_dien_thoai: form.so_dien_thoai.trim(),
+      email: form.email.trim(),
       mat_khau: form.mat_khau,
     };
 
@@ -332,6 +340,31 @@ const register2 = () => {
                   <p className="mt-1 text-xs text-red-500">
                     {errors.so_dien_thoai}
                   </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="VD: example@example.com"
+                  className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/40 dark:bg-slate-700 dark:text-white dark:border-slate-600 ${
+                    errors.email
+                      ? "border-red-400 focus:ring-red-400/30"
+                      : "border-slate-200 focus:border-primary-500"
+                  }`}
+                />
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
                 )}
               </div>
 
