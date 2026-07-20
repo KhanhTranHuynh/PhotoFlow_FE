@@ -15,9 +15,9 @@ const login2 = () => {
     <>
       <ToastContainer />
       <div className="loginwrapper">
-        <div className="lg-inner-column">
+        <div className="lg-inner-column flex flex-col lg:flex-row w-full">
           <div
-            className="left-column bg-cover bg-no-repeat bg-center "
+            className=" bg-cover bg-no-repeat bg-center w-full lg:w-[70%]"
             style={{
               backgroundImage: `url(${bgImage})`,
             }}>
@@ -36,7 +36,7 @@ const login2 = () => {
             </div>
           </div>
 
-          <div className="right-column relative">
+          <div className="relative w-full lg:w-[30%]">
             <div className="inner-content h-full flex flex-col bg-white dark:bg-slate-800">
               <div className="auth-box h-full flex flex-col justify-center">
                 <div className="mobile-logo text-center mb-6 lg:hidden block">
