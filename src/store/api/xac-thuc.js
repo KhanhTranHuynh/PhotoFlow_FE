@@ -31,7 +31,7 @@ export async function logout() {
 
 export async function getProfile() {
   try {
-    const response = await http.post("/profile/me", {});
+    const response = await http.post("/xac-thuc/profile/me", {});
     logger.info("[getProfile] Response:", response.data);
     return response.data;
   } catch (err) {

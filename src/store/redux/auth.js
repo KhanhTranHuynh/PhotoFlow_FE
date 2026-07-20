@@ -94,7 +94,7 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     try {
       const res = await getProfile();
-      const ok = Number(res?.code) === 1; // ✅ dùng res.code
+      const ok = Number(res?.code) > 0; // ✅ dùng res.code
 
       if (!ok) {
         dispatch(resetChatState());
