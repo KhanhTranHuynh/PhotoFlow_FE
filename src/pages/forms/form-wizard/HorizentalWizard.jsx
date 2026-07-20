@@ -29,21 +29,21 @@ const steps = [
 ];
 
 let stepSchema = yup.object().shape({
-  username: yup.string().required(" User name is required"),
+  so_dien_thoai: yup.string().required(" User name is required"),
   fullname: yup.string().required("Full name is required"),
   email: yup.string().email("Email is not valid").required("Email is required"),
   phone: yup
     .string()
     .required("Phone number is required")
     .matches(/^[0-9]{12}$/, "Phone number is not valid"),
-  password: yup
+  mat_khau: yup
     .string()
-    .required("Password is required")
-    .min(8, "Password must be at least 8 characters"),
+    .required("mat_khau is required")
+    .min(8, "mat_khau must be at least 8 characters"),
   confirmpass: yup
     .string()
-    .required("Confirm Password is required")
-    .oneOf([yup.ref("password"), null], "Passwords must match"),
+    .required("Confirm mat_khau is required")
+    .oneOf([yup.ref("mat_khau"), null], "mat_khaus must match"),
 });
 
 let personalSchema = yup.object().shape({
@@ -121,15 +121,13 @@ const FormWizard = () => {
             {steps.map((item, i) => (
               <div
                 className="relative z-[1] items-center item flex flex-start flex-1 last:flex-none group"
-                key={i}
-              >
+                key={i}>
                 <div
                   className={`${
                     stepNumber >= i
                       ? "bg-slate-900 text-white ring-slate-900 ring-offset-2 dark:ring-offset-slate-500 dark:bg-slate-900 dark:ring-slate-900"
                       : "bg-white ring-slate-900 ring-opacity-70  text-slate-900 dark:text-slate-300 dark:bg-slate-600 dark:ring-slate-600 text-opacity-70"
-                  }  transition duration-150 icon-box md:h-12 md:w-12 h-7 w-7 rounded-full flex flex-col items-center justify-center relative z-[66] ring-1 md:text-lg text-base font-medium`}
-                >
+                  }  transition duration-150 icon-box md:h-12 md:w-12 h-7 w-7 rounded-full flex flex-col items-center justify-center relative z-[66] ring-1 md:text-lg text-base font-medium`}>
                   {stepNumber <= i ? (
                     <span> {i + 1}</span>
                   ) : (
@@ -144,15 +142,13 @@ const FormWizard = () => {
                     stepNumber >= i
                       ? "bg-slate-900 dark:bg-slate-900"
                       : "bg-[#E0EAFF] dark:bg-slate-700"
-                  } absolute top-1/2 h-[2px] w-full`}
-                ></div>
+                  } absolute top-1/2 h-[2px] w-full`}></div>
                 <div
                   className={` ${
                     stepNumber >= i
                       ? " text-slate-900 dark:text-slate-300"
                       : "text-slate-500 dark:text-slate-300 dark:text-opacity-40"
-                  } absolute top-full text-base md:leading-6 mt-3 transition duration-150 md:opacity-100 opacity-0 group-hover:opacity-100`}
-                >
+                  } absolute top-full text-base md:leading-6 mt-3 transition duration-150 md:opacity-100 opacity-0 group-hover:opacity-100`}>
                   <span className="w-max">{item.title}</span>
                 </div>
               </div>
@@ -170,11 +166,11 @@ const FormWizard = () => {
                       </h4>
                     </div>
                     <Textinput
-                      label="Username"
+                      label="so_dien_thoai"
                       type="text"
                       placeholder="Type your User Name"
-                      name="username"
-                      error={errors.username}
+                      name="so_dien_thoai"
+                      error={errors.so_dien_thoai}
                       register={register}
                     />
                     <Textinput
@@ -203,18 +199,18 @@ const FormWizard = () => {
                       register={register}
                     />
                     <Textinput
-                      label="Password"
-                      type="password"
+                      label="mat_khau"
+                      type="mat_khau"
                       placeholder="8+ characters, 1 capitat letter "
-                      name="password"
-                      error={errors.password}
+                      name="mat_khau"
+                      error={errors.mat_khau}
                       hasicon
                       register={register}
                     />
                     <Textinput
-                      label="Confirm Password"
-                      type="password"
-                      placeholder="Password"
+                      label="Confirm mat_khau"
+                      type="mat_khau"
+                      placeholder="mat_khau"
                       name="confirmpass"
                       error={errors.confirmpass}
                       register={register}
@@ -293,8 +289,7 @@ const FormWizard = () => {
               <div
                 className={`${
                   stepNumber > 0 ? "flex justify-between" : " text-right"
-                } mt-10`}
-              >
+                } mt-10`}>
                 {stepNumber !== 0 && (
                   <Button
                     text="prev"

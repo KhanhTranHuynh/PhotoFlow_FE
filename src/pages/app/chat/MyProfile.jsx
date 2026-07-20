@@ -10,7 +10,7 @@ import SimpleBar from "simplebar-react";
 const MyProfile = () => {
   const user = useSelector((state) => state.auth.user);
   const avatarText = getAvatarInitials(
-    user?.fullname || user?.username || "Người dùng",
+    user?.fullname || user?.so_dien_thoai || "Người dùng",
   );
 
   return (
@@ -32,7 +32,7 @@ const MyProfile = () => {
                   <span className="status bg-success-500 inline-block h-[10px] w-[10px] rounded-full ml-3"></span>
                 </span>
                 <span className="block text-slate-500 dark:text-slate-300 text-xs font-normal">
-                  {user?.username || ""}
+                  {user?.so_dien_thoai || ""}
                 </span>
               </div>
             </div>

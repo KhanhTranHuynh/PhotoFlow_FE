@@ -45,7 +45,7 @@ const LockScreen = () => {
               <div className="text-center mb-10">
                 <h4 className="font-medium mb-4">Lock Screen</h4>
                 <div className="text-slate-500 dark:text-slate-400 text-base">
-                  Enter your password to unlock the screen!
+                  Enter your mat_khau to unlock the screen!
                 </div>
               </div>
               <div className="author-bio text-center mb-8">

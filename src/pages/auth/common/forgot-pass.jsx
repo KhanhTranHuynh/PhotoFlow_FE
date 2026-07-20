@@ -7,7 +7,7 @@ import * as yup from "yup";
 const schema = yup
   .object({
     email: yup.string().email("Invalid email").required("Email is Required"),
-    password: yup.string().required("Password is Required"),
+    mat_khau: yup.string().required("mat_khau is Required"),
   })
   .required();
 const ForgotPass = () => {

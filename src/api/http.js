@@ -16,7 +16,10 @@ const http = axios.create({
 
 let refreshPromise = null;
 
-const AUTH_PATHS_NO_REFRESH = ["/auth/login", "/auth/refresh-token"];
+const AUTH_PATHS_NO_REFRESH = [
+  "/public/xac-thuc/dang-nhap",
+  "/auth/refresh-token",
+];
 
 function isAuthEndpoint(config) {
   const url = String(config?.url || "");

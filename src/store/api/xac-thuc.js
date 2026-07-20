@@ -1,15 +1,15 @@
 import logger from "@/helpers/logger";
 import http from "@/api/http";
 
-export async function login({ username, password }) {
+export async function login({ so_dien_thoai, mat_khau }) {
   const body = {
-    username: username.trim(),
-    password: password.trim(),
+    so_dien_thoai: so_dien_thoai.trim(),
+    mat_khau: mat_khau.trim(),
   };
 
   try {
     logger.info("[login] Request body:", body);
-    const response = await http.post("/auth/login", body);
+    const response = await http.post("/public/xac-thuc/dang-nhap", body);
     logger.info("[login] Response:", response.data);
     return response.data;
   } catch (err) {

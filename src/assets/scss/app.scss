@@ -93,10 +93,10 @@
     // }
   }
 
-  /* Prevent Edge/IE built-in password reveal icon (double-eye issue)
+  /* Prevent Edge/IE built-in mat_khau reveal icon (double-eye issue)
      when we render our own visibility toggle button. */
-  .password-toggle-input::-ms-reveal,
-  .password-toggle-input::-ms-clear {
+  .mat_khau-toggle-input::-ms-reveal,
+  .mat_khau-toggle-input::-ms-clear {
     display: none;
   }
 }

@@ -41,15 +41,13 @@ const InputGroup = ({
   return (
     <div
       className={`  ${horizontal ? "flex" : ""} 
-      ${merged ? "merged" : ""}  `}
-    >
+      ${merged ? "merged" : ""}  `}>
       {label && (
         <label
           htmlFor={id}
           className={`block capitalize ${classLabel}  ${
             horizontal ? "flex-0 mr-6 md:w-[100px] w-[60px] break-words" : ""
-          }`}
-        >
+          }`}>
           {label}
         </label>
       )}
@@ -64,8 +62,7 @@ const InputGroup = ({
     
    
     ${horizontal ? "flex-1" : ""}
-      `}
-      >
+      `}>
         {/* prepend*/}
         {prepend && (
           <span className="flex-none input-group-addon">
@@ -79,11 +76,10 @@ const InputGroup = ({
             className={`relative fromGroup2
           ${error ? "has-error" : ""} 
            ${validate ? "is-valid" : ""}
-          `}
-          >
+          `}>
             {name && !isMask && (
               <input
-                type={type === "password" && open === true ? "text" : type}
+                type={type === "mat_khau" && open === true ? "text" : type}
                 {...register(name)}
                 {...rest}
                 className={`${
@@ -98,7 +94,7 @@ const InputGroup = ({
             )}
             {!name && !isMask && (
               <input
-                type={type === "password" && open === true ? "text" : type}
+                type={type === "mat_khau" && open === true ? "text" : type}
                 className={`input-group-control block w-full focus:outline-none py-2 ${className}`}
                 placeholder={placeholder}
                 readOnly={readonly}
@@ -142,12 +138,11 @@ const InputGroup = ({
               {hasicon && (
                 <span
                   className="cursor-pointer text-secondary-500"
-                  onClick={handleOpen}
-                >
-                  {open && type === "password" && (
+                  onClick={handleOpen}>
+                  {open && type === "mat_khau" && (
                     <Icon icon="heroicons-outline:eye" />
                   )}
-                  {!open && type === "password" && (
+                  {!open && type === "mat_khau" && (
                     <Icon icon="heroicons-outline:eye-off" />
                   )}
                 </span>
@@ -180,8 +175,7 @@ const InputGroup = ({
             msgTooltip
               ? " inline-block bg-danger-500 text-white text-[10px] px-2 py-1 rounded"
               : " text-danger-500 block text-sm"
-          }`}
-        >
+          }`}>
           {error.message}
         </div>
       )}
@@ -192,8 +186,7 @@ const InputGroup = ({
             msgTooltip
               ? " inline-block bg-success-500 text-white text-[10px] px-2 py-1 rounded"
               : " text-success-500 block text-sm"
-          }`}
-        >
+          }`}>
           {validate}
         </div>
       )}

@@ -34,16 +34,16 @@ export const topMenu = [
             m_childlink: "/register/register3",
           },
           {
-            m_childtitle: "Forget Password One",
-            m_childlink: "/forgot-password",
+            m_childtitle: "Forget mat_khau One",
+            m_childlink: "/forgot-mat_khau",
           },
           {
-            m_childtitle: "Forget Password Two",
-            m_childlink: "/forgot-password2",
+            m_childtitle: "Forget mat_khau Two",
+            m_childlink: "/forgot-mat_khau2",
           },
           {
-            m_childtitle: "Forget Password Three",
-            m_childlink: "/forgot-password3",
+            m_childtitle: "Forget mat_khau Three",
+            m_childlink: "/forgot-mat_khau3",
           },
           {
             m_childtitle: "Lock Screen One",

@@ -7,7 +7,7 @@ import * as yup from "yup";
 
 const FormValidationSchema = yup
   .object({
-    username: yup.string().required(),
+    so_dien_thoai: yup.string().required(),
     number: yup.number().required().positive(),
     betweenNumber: yup
       .number()
@@ -22,7 +22,7 @@ const FormValidationSchema = yup
       .matches(/^[a-zA-Z]+$/, "Must only consist of alphabetic characters"),
     length: yup.string().required("The Min Character field is required").min(3),
 
-    password: yup.string().required().min(8),
+    mat_khau: yup.string().required().min(8),
     url: yup.string().required("The URL field is required").url(),
     message: yup.string().required("The Message field is required"),
   })
@@ -45,15 +45,14 @@ const ValidationTypes = () => {
     <div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="lg:grid-cols-2 grid gap-5 grid-cols-1 "
-      >
+        className="lg:grid-cols-2 grid gap-5 grid-cols-1 ">
         <Textinput
           label="Required"
           type="text"
           placeholder="Type your User Name"
-          name="username"
+          name="so_dien_thoai"
           register={register}
-          error={errors.username}
+          error={errors.so_dien_thoai}
         />
         <Textinput
           label="Must only consist of numbers"
@@ -90,12 +89,12 @@ const ValidationTypes = () => {
           error={errors.length}
         />
         <Textinput
-          label="Password"
-          type="password"
+          label="mat_khau"
+          type="mat_khau"
           placeholder="8+ characters, 1 Capital letter "
-          name="re_password"
+          name="re_mat_khau"
           register={register}
-          error={errors.password}
+          error={errors.mat_khau}
         />
         <Textinput
           label="Must be a valid url"

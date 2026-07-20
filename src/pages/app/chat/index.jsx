@@ -311,7 +311,7 @@ const ChatPage = ({ convId: customerConvId }) => {
                 <div className="divide-y divide-slate-100 dark:divide-slate-700 h-full">
                   <Chat
                     convId={currentConvId}
-                    userName={
+                    so_dien_thoai={
                       role === "customer"
                         ? "Nhân Viên"
                         : resolveChatDisplayName(currentConv, role)

@@ -13,15 +13,15 @@ const schema = yup
   .object({
     name: yup.string().required("Name is Required"),
     email: yup.string().email("Invalid email").required("Email is Required"),
-    password: yup
+    mat_khau: yup
       .string()
-      .min(6, "Password must be at least 8 characters")
-      .max(20, "Password shouldn't be more than 20 characters")
-      .required("Please enter password"),
-    // confirm password
-    confirmpassword: yup
+      .min(6, "mat_khau must be at least 8 characters")
+      .max(20, "mat_khau shouldn't be more than 20 characters")
+      .required("Please enter mat_khau"),
+    // confirm mat_khau
+    confirmmat_khau: yup
       .string()
-      .oneOf([yup.ref("password"), null], "Passwords must match"),
+      .oneOf([yup.ref("mat_khau"), null], "mat_khaus must match"),
   })
   .required();
 
@@ -67,12 +67,12 @@ const RegForm = () => {
         className="h-[48px]"
       />
       <Textinput
-        name="password"
+        name="mat_khau"
         label="passwrod"
-        type="password"
-        placeholder=" Enter your password"
+        type="mat_khau"
+        placeholder=" Enter your mat_khau"
         register={register}
-        error={errors.password}
+        error={errors.mat_khau}
         className="h-[48px]"
       />
       <Checkbox

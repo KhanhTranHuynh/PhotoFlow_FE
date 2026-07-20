@@ -16,8 +16,8 @@ import { getAuthRedirectPath } from "@/utils/getAuthRedirectPath";
 
 const schema = yup
   .object({
-    username: yup.string().required("Số điện thoại không được để trống"),
-    password: yup.string().required("Password không được để trống"),
+    so_dien_thoai: yup.string().required("Số điện thoại không được để trống"),
+    mat_khau: yup.string().required("mat_khau không được để trống"),
   })
   .required();
 
@@ -88,12 +88,12 @@ const LoginForm = () => {
   const [searchParams] = useSearchParams();
 
   const [alert, setAlert] = useState({ visible: false, message: "" });
-  const [showPassword, setShowPassword] = useState(false);
+  const [showmat_khau, setShowmat_khau] = useState(false);
   const [ssoProcessing, setSsoProcessing] = useState(false);
 
   const formRef = useRef(null);
   const composing = useRef(false);
-  const passwordRef = useRef(null);
+  const mat_khauRef = useRef(null);
 
   const {
     control,
@@ -102,7 +102,7 @@ const LoginForm = () => {
   } = useForm({
     resolver: yupResolver(schema),
     mode: "all",
-    defaultValues: { username: "", password: "" },
+    defaultValues: { so_dien_thoai: "", mat_khau: "" },
   });
 
   // ── SSO query string fallback ──────────────────────────────────────────────
@@ -159,10 +159,14 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     const action = await dispatch(
-      loginWithApi({ username: data.username, password: data.password }),
+      loginWithApi({
+        so_dien_thoai: data.so_dien_thoai,
+        mat_khau: data.mat_khau,
+      }),
     );
 
-    if (action?.payload?.errorCode === -1) {
+    // ✅ dùng matcher thay vì đoán field "code" trong payload lỗi
+    if (loginWithApi.rejected.match(action)) {
       setAlert({
         visible: true,
         message: action.payload?.message || "Đăng nhập thất bại",
@@ -174,9 +178,8 @@ const LoginForm = () => {
       setAlert({ visible: false, message: "" });
       const profileAction = await dispatch(fetchProfile());
       if (fetchProfile.fulfilled.match(profileAction)) {
-        const roles = profileAction.payload?.roles || [];
-        const roleCodes = Array.isArray(roles) ? roles.map((r) => r.code) : [];
-        navigate(getAuthRedirectPath(roleCodes), { replace: true });
+        const user = profileAction.payload; // ✅ payload chính là user
+        navigate(getAuthRedirectPath(user), { replace: true }); // ✅
       }
     }
   };
@@ -202,12 +205,12 @@ const LoginForm = () => {
     }
   };
 
-  const toggleShowPassword = () => {
-    setShowPassword((prev) => {
+  const toggleShowmat_khau = () => {
+    setShowmat_khau((prev) => {
       setTimeout(() => {
-        if (passwordRef.current) {
-          passwordRef.current.focus();
-          setCaretToEnd(passwordRef.current);
+        if (mat_khauRef.current) {
+          mat_khauRef.current.focus();
+          setCaretToEnd(mat_khauRef.current);
         }
       }, 0);
       return !prev;
@@ -258,7 +261,7 @@ const LoginForm = () => {
         noValidate>
         <div>
           <Controller
-            name="username"
+            name="so_dien_thoai"
             control={control}
             render={({ field }) => (
               <div>
@@ -267,17 +270,17 @@ const LoginForm = () => {
                   type="text"
                   placeholder="Số điện thoại"
                   className={`w-full h-[48px] px-3 rounded border ${
-                    errors.username ? "border-red-500" : "border-slate-200"
+                    errors.so_dien_thoai ? "border-red-500" : "border-slate-200"
                   }`}
                   onFocus={() => setAlert({ visible: false, message: "" })}
                   onKeyDown={onKeyDown}
                   onCompositionStart={() => (composing.current = true)}
                   onCompositionEnd={() => (composing.current = false)}
-                  autoComplete="username"
+                  autoComplete="so_dien_thoai"
                 />
                 <p
-                  className={`mt-1 text-sm text-red-600 ${errors.username ? "" : "invisible"}`}>
-                  {errors.username?.message || "\u00A0"}
+                  className={`mt-1 text-sm text-red-600 ${errors.so_dien_thoai ? "" : "invisible"}`}>
+                  {errors.so_dien_thoai?.message || "\u00A0"}
                 </p>
               </div>
             )}
@@ -286,7 +289,7 @@ const LoginForm = () => {
 
         <div>
           <Controller
-            name="password"
+            name="mat_khau"
             control={control}
             render={({ field }) => (
               <div className="relative">
@@ -294,29 +297,29 @@ const LoginForm = () => {
                   {...field}
                   ref={(el) => {
                     field.ref(el);
-                    passwordRef.current = el;
+                    mat_khauRef.current = el;
                   }}
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  className={`password-toggle-input w-full h-[48px] pr-10 pl-3 rounded border ${
-                    errors.password ? "border-red-500" : "border-slate-200"
+                  type={showmat_khau ? "text" : "mat_khau"}
+                  placeholder="mat_khau"
+                  className={`mat_khau-toggle-input w-full h-[48px] pr-10 pl-3 rounded border ${
+                    errors.mat_khau ? "border-red-500" : "border-slate-200"
                   }`}
                   onFocus={() => setAlert({ visible: false, message: "" })}
                   onKeyDown={onKeyDown}
                   onCompositionStart={() => (composing.current = true)}
                   onCompositionEnd={() => (composing.current = false)}
-                  autoComplete="current-password"
+                  autoComplete="current-mat_khau"
                 />
                 <button
                   type="button"
-                  onClick={toggleShowPassword}
+                  onClick={toggleShowmat_khau}
                   className="absolute right-2 top-1/3 -translate-y-1/2 inline-flex items-center justify-center p-1 leading-none text-slate-600 hover:text-slate-900"
-                  aria-label={showPassword ? "Hide password" : "Show password"}>
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  aria-label={showmat_khau ? "Hide mat_khau" : "Show mat_khau"}>
+                  {showmat_khau ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
                 <p
-                  className={`mt-1 text-sm text-red-600 ${errors.password ? "" : "invisible"}`}>
-                  {errors.password?.message || "\u00A0"}
+                  className={`mt-1 text-sm text-red-600 ${errors.mat_khau ? "" : "invisible"}`}>
+                  {errors.mat_khau?.message || "\u00A0"}
                 </p>
               </div>
             )}

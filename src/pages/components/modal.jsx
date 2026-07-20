@@ -22,8 +22,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -48,8 +47,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -74,8 +72,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -100,8 +97,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -130,8 +126,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -156,8 +151,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -182,8 +176,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -208,8 +201,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -234,8 +226,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -260,8 +251,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -290,8 +280,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -316,8 +305,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 class="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -342,8 +330,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 class="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -368,8 +355,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 class="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -394,8 +380,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 class="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -423,8 +408,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <div className="text-base text-slate-600 dark:text-slate-300">
               <Textinput
                 label="Email"
@@ -432,8 +416,8 @@ const ModalPage = () => {
                 placeholder="Type your email"
               />
               <Textinput
-                label="Password"
-                type="password"
+                label="mat_khau"
+                type="mat_khau"
                 placeholder="8+ characters, 1 capitat letter "
               />
             </div>
@@ -451,8 +435,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>
@@ -531,8 +514,7 @@ const ModalPage = () => {
                   alert("use Control Modal");
                 }}
               />
-            }
-          >
+            }>
             <h4 className="font-medium text-lg mb-3 text-slate-900">
               Lorem ipsum dolor sit.
             </h4>

@@ -32,30 +32,31 @@ const initialAuthUser = () => {
 
 export const loginWithApi = createAsyncThunk(
   "auth/loginWithApi",
-  async ({ username, password }, { rejectWithValue }) => {
+  async ({ so_dien_thoai, mat_khau }, { rejectWithValue }) => {
     try {
-      const res = await login({ username, password });
-      const ok = Number(res?.errorCode) === 1;
+      const res = await login({ so_dien_thoai, mat_khau });
+      const ok = Number(res?.code) > 0; // ✅ dùng res.code thay vì errorCode
 
       if (!ok) {
         return rejectWithValue({
           message: res?.message || "Đăng nhập thất bại",
-          errorCode: res?.errorCode ?? null,
+          code: res?.code ?? null,
         });
       }
 
-      const payload = res?.data;
+      // ✅ res.data CHÍNH LÀ object user, không có field "user" lồng bên trong
+      const user = res?.data || null;
       setToken_rToken(res);
-      console.log("Login successful, payload:", payload, payload?.user);
+
       return {
         message: res?.message || "Đăng nhập thành công",
-        user: payload?.user || null,
+        user,
       };
     } catch (err) {
       const apiMsg = err?.response?.data?.message;
       return rejectWithValue({
         message: apiMsg || err?.message || "Đăng nhập thất bại",
-        errorCode: null,
+        code: null,
       });
     }
   },
@@ -93,25 +94,21 @@ export const fetchProfile = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     try {
       const res = await getProfile();
-
-      const ok = Number(res?.errorCode) === 1;
+      const ok = Number(res?.code) === 1; // ✅ dùng res.code
 
       if (!ok) {
         dispatch(resetChatState());
         dispatch(handleLogout(false));
-
         return rejectWithValue({
           message: res?.message || "Lấy thông tin người dùng thất bại",
         });
       }
 
-      return res?.data;
+      return res?.data; // ✅ res.data đã là user object, giữ nguyên
     } catch (err) {
       dispatch(resetChatState());
       dispatch(handleLogout(false));
-
       const apiMsg = err?.response?.data?.message;
-
       return rejectWithValue({
         message: apiMsg || err?.message || "Lấy thông tin người dùng thất bại",
       });

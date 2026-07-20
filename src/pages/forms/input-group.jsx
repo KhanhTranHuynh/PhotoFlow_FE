@@ -32,14 +32,14 @@ const InputGroupPage = () => {
           />
           <InputGroup
             type="text"
-            label="password"
+            label="mat_khau"
             id="ps-1"
-            placeholder="Your password"
+            placeholder="Your mat_khau"
           />
-          <InputGroup type="text" placeholder="Username" prepend="@" />
+          <InputGroup type="text" placeholder="so_dien_thoai" prepend="@" />
           <InputGroup
             type="text"
-            placeholder="Recient’s username"
+            placeholder="Recient’s so_dien_thoai"
             append="@example.com"
           />
           <InputGroup
@@ -124,15 +124,20 @@ const InputGroupPage = () => {
             />
             <InputGroup
               type="text"
-              label="password"
+              label="mat_khau"
               id="ps-1"
-              placeholder="Your password"
+              placeholder="Your mat_khau"
               merged
             />
-            <InputGroup type="text" placeholder="Username" prepend="@" merged />
             <InputGroup
               type="text"
-              placeholder="Recient’s username"
+              placeholder="so_dien_thoai"
+              prepend="@"
+              merged
+            />
+            <InputGroup
+              type="text"
+              placeholder="Recient’s so_dien_thoai"
               append="@example.com"
               merged
             />

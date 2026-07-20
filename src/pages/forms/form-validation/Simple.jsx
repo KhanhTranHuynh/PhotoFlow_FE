@@ -6,7 +6,7 @@ import * as yup from "yup";
 
 const FormValidationSchema = yup
   .object({
-    password: yup.string().required("Password is Required"),
+    mat_khau: yup.string().required("mat_khau is Required"),
     email: yup.string().email("Invalid email").required("Email is Required"),
   })
   .required();
@@ -35,11 +35,11 @@ const Simple = () => {
           error={errors.email}
         />
         <Textinput
-          name="password"
-          label="password"
-          type="password"
+          name="mat_khau"
+          label="mat_khau"
+          type="mat_khau"
           register={register}
-          error={errors.password}
+          error={errors.mat_khau}
         />
 
         <div className="ltr:text-right rtl:text-left">

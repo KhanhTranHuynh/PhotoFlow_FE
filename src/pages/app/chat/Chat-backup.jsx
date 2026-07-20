@@ -86,7 +86,7 @@ const TypingIndicator = ({ text }) => {
 // Chat
 const Chat = ({
   convId,
-  userName = "Khách hàng",
+  so_dien_thoai = "Khách hàng",
   userAvatar,
   userStatus = "active",
 }) => {
@@ -572,19 +572,19 @@ const Chat = ({
                   {userAvatar ? (
                     <img
                       src={userAvatar}
-                      alt={userName}
+                      alt={so_dien_thoai}
                       className="w-full h-full object-cover rounded-full"
                     />
                   ) : (
                     <div className="w-full h-full rounded-full bg-primary-200 dark:bg-primary-900 flex items-center justify-center font-bold text-primary-600 dark:text-primary-300 text-sm">
-                      {(userName || "?")[0].toUpperCase()}
+                      {(so_dien_thoai || "?")[0].toUpperCase()}
                     </div>
                   )}
                 </div>
               </div>
               <div className="flex-1 text-start">
                 <span className="block text-slate-800 dark:text-slate-300 text-sm font-medium mb-[2px] truncate">
-                  {userName}
+                  {so_dien_thoai}
                 </span>
                 {/* <span className="block text-slate-500 dark:text-slate-300 text-xs font-normal flex items-center gap-1">
                   {connected ? (

@@ -6,13 +6,13 @@ import * as yup from "yup";
 
 const FormValidationSchema = yup
   .object({
-    password: yup.string().required("Password is Required"),
+    mat_khau: yup.string().required("mat_khau is Required"),
     email: yup.string().email("Invalid email").required("Email is Required"),
-    username: yup.string().required("Username is Required"),
-    confirmpassword: yup
+    so_dien_thoai: yup.string().required("so_dien_thoai is Required"),
+    confirmmat_khau: yup
       .string()
       .required()
-      .oneOf([yup.ref("password")]),
+      .oneOf([yup.ref("mat_khau")]),
   })
   .required();
 
@@ -33,8 +33,7 @@ const MultiValidation = () => {
     <div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="lg:grid-cols-2 grid gap-5 grid-cols-1 "
-      >
+        className="lg:grid-cols-2 grid gap-5 grid-cols-1 ">
         <Textinput
           name="email"
           label="email"
@@ -43,25 +42,25 @@ const MultiValidation = () => {
           error={errors.email}
         />
         <Textinput
-          name="password"
-          label="password"
-          type="password"
+          name="mat_khau"
+          label="mat_khau"
+          type="mat_khau"
           register={register}
-          error={errors.password}
+          error={errors.mat_khau}
         />
         <Textinput
-          name="username"
-          label="username"
+          name="so_dien_thoai"
+          label="so_dien_thoai"
           type="text"
           register={register}
-          error={errors.username}
+          error={errors.so_dien_thoai}
         />
         <Textinput
-          name="confirmpassword"
-          label="confirmpassword"
-          type="password"
+          name="confirmmat_khau"
+          label="confirmmat_khau"
+          type="mat_khau"
           register={register}
-          error={errors.confirmpassword}
+          error={errors.confirmmat_khau}
         />
 
         <div className="lg:col-span-2 col-span-1">

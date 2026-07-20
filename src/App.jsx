@@ -119,12 +119,10 @@ function hasAuthCookies() {
 }
 
 function RootRedirect() {
-  const roles = useSelector((state) => state.auth.user?.roles || []);
-  const roleCodes = roles.map((item) => item.code);
-
+  const user = useSelector((state) => state.auth.user);
   return (
     <Navigate
-      to={hasAuthCookies() ? getAuthRedirectPath(roleCodes) : "/login"}
+      to={hasAuthCookies() ? getAuthRedirectPath(user) : "/login"}
       replace
     />
   );
@@ -188,7 +186,7 @@ function App() {
   const roles = user?.roles || [];
   const roleCodes = roles.map((item) => item.code);
 
-  const isCustomer = roleCodes.includes("CUSTOMER");
+  const isCustomer = user?.loai_dang_nhap === "khach_hang";
   const chatBubbleRole = isCustomer ? "customer" : "staff";
 
   useEffect(() => {

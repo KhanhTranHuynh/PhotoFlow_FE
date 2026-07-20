@@ -35,9 +35,9 @@ const InputlayoutPage = () => {
             horizontal
           />
           <Textinput
-            label="Password"
-            id="h_password"
-            type="Password"
+            label="mat_khau"
+            id="h_mat_khau"
+            type="mat_khau"
             placeholder="8+ characters, 1 capitat letter "
             horizontal
           />
@@ -81,9 +81,9 @@ const InputlayoutPage = () => {
             merged
           />
           <InputGroup
-            label="Password"
-            id="hi_password"
-            type="Password"
+            label="mat_khau"
+            id="hi_mat_khau"
+            type="mat_khau"
             placeholder="8+ characters, 1 capitat letter "
             prepend={<Icon icon="heroicons-outline:lock-closed" />}
             horizontal
@@ -120,9 +120,9 @@ const InputlayoutPage = () => {
             placeholder="Type your email"
           />
           <Textinput
-            label="Password"
-            id="h_password2"
-            type="Password"
+            label="mat_khau"
+            id="h_mat_khau2"
+            type="mat_khau"
             placeholder="8+ characters, 1 capitat letter "
           />
           <div className=" space-y-4">
@@ -162,9 +162,9 @@ const InputlayoutPage = () => {
             merged
           />
           <InputGroup
-            label="Password"
-            id="hi_password1"
-            type="Password"
+            label="mat_khau"
+            id="hi_mat_khau1"
+            type="mat_khau"
             placeholder="8+ characters, 1 capitat letter "
             prepend={<Icon icon="heroicons-outline:lock-closed" />}
             merged

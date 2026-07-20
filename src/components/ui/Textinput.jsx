@@ -387,7 +387,7 @@ const Textinput = ({
   const resolvedType =
     phone || money || number || soLuong
       ? "text"
-      : type === "password" && open
+      : type === "mat_khau" && open
         ? "text"
         : type;
 
@@ -464,7 +464,7 @@ const Textinput = ({
         {/* PHONE input */}
         {!datePicker && phone && (
           <input
-            autoComplete="new-password"
+            autoComplete="new-mat_khau"
             type="text"
             inputMode="numeric"
             pattern="\d*"
@@ -488,7 +488,7 @@ const Textinput = ({
         {/* EMAIL input */}
         {!datePicker && !phone && email && (
           <input
-            autoComplete="new-password"
+            autoComplete="new-mat_khau"
             type="text"
             value={emailValue}
             onChange={handleEmailChange}
@@ -682,10 +682,10 @@ const Textinput = ({
               <span
                 className="cursor-pointer text-secondary-500"
                 onClick={handleOpen}>
-                {open && type === "password" && (
+                {open && type === "mat_khau" && (
                   <Icon icon="heroicons-outline:eye" />
                 )}
-                {!open && type === "password" && (
+                {!open && type === "mat_khau" && (
                   <Icon icon="heroicons-outline:eye-off" />
                 )}
               </span>
