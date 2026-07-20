@@ -67,7 +67,7 @@ export const logoutWithApi = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     try {
       const res = await logout();
-      const ok = Number(res?.errorCode) === 1;
+      const ok = Number(res?.code) > 0; // ✅ dùng res.code, đồng bộ với loginWithApi/fetchProfile
 
       if (!ok) {
         return rejectWithValue({
@@ -75,7 +75,6 @@ export const logoutWithApi = createAsyncThunk(
         });
       }
 
-      // Clear client-side auth state
       dispatch(resetChatState());
       dispatch(handleLogout(false));
 
