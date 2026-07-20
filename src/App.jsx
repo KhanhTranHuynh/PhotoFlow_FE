@@ -91,7 +91,7 @@ import { useNotificationSocket } from "@/hooks/useNotificationSocket";
 import { useDocumentTitleNotification } from "@/hooks/useDocumentTitleNotification";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { useChatInit } from "@/hooks/useChatInit";
-
+import { getUserRoleCodes } from "@/utils/getUserRoleCodes";
 import { unlockAudio } from "@/helpers/notificationSound";
 
 import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
@@ -120,14 +120,15 @@ function hasAuthCookies() {
 
 function RootRedirect() {
   const user = useSelector((state) => state.auth.user);
+  const roleCodes = getUserRoleCodes(user);
+
   return (
     <Navigate
-      to={hasAuthCookies() ? getAuthRedirectPath(user) : "/login"}
+      to={hasAuthCookies() ? getAuthRedirectPath(roleCodes) : "/login"}
       replace
     />
   );
 }
-
 function ErrorFallback({ error, resetErrorBoundary }) {
   useEffect(() => {
     console.error("[ErrorBoundary]", {
@@ -183,10 +184,9 @@ function App() {
 
   const authInitialized = useSelector((state) => state.auth.authInitialized);
   const user = useSelector((state) => state.auth.user);
-  const roles = user?.roles || [];
-  const roleCodes = roles.map((item) => item.code);
+  const roleCodes = getUserRoleCodes(user);
 
-  const isCustomer = user?.loai_dang_nhap === "khach_hang";
+  const isCustomer = roleCodes.includes("khach_hang");
   const chatBubbleRole = isCustomer ? "customer" : "staff";
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import {
 } from "../../../store/redux/auth";
 import { setToken_rToken } from "@/helpers/setToken_rToken";
 import { getAuthRedirectPath } from "@/utils/getAuthRedirectPath";
+import { getUserRoleCodes } from "@/utils/getUserRoleCodes";
 
 const schema = yup
   .object({
@@ -142,8 +143,8 @@ const LoginForm = () => {
       // Lấy profile để có roles → redirect đúng trang
       const profileAction = await dispatch(fetchProfile());
       if (fetchProfile.fulfilled.match(profileAction)) {
-        const roles = profileAction.payload?.roles ?? [];
-        const roleCodes = Array.isArray(roles) ? roles.map((r) => r.code) : [];
+        const user = profileAction.payload;
+        const roleCodes = getUserRoleCodes(user); // ✅ gộp role
         navigate(getAuthRedirectPath(roleCodes), { replace: true });
       } else {
         setSsoProcessing(false);
@@ -165,7 +166,6 @@ const LoginForm = () => {
       }),
     );
 
-    // ✅ dùng matcher thay vì đoán field "code" trong payload lỗi
     if (loginWithApi.rejected.match(action)) {
       setAlert({
         visible: true,
@@ -178,8 +178,9 @@ const LoginForm = () => {
       setAlert({ visible: false, message: "" });
       const profileAction = await dispatch(fetchProfile());
       if (fetchProfile.fulfilled.match(profileAction)) {
-        const user = profileAction.payload; // ✅ payload chính là user
-        navigate(getAuthRedirectPath(user), { replace: true }); // ✅
+        const user = profileAction.payload;
+        const roleCodes = getUserRoleCodes(user); // ✅ gộp role
+        navigate(getAuthRedirectPath(roleCodes), { replace: true });
       }
     }
   };
