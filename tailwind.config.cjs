@@ -27,17 +27,18 @@ module.exports = {
     },
     extend: {
       colors: {
+        // Brand primary rebuilt around #B37E37
         primary: {
-          50: "#EFF6FF",
-          100: "#DBEAFE",
-          200: "#BFDBFE",
-          300: "#93C5FD",
-          400: "#60A5FA",
-          500: "#3B82F6",
-          600: "#2563EB",
-          700: "#1D4ED8",
-          800: "#1E40AF",
-          900: "#1E3A8A",
+          50: "#FBF5EC",
+          100: "#F5E6D2",
+          200: "#EACEA5",
+          300: "#DEB378",
+          400: "#C99A54",
+          500: "#B37E37",
+          600: "#96662B",
+          700: "#784F22",
+          800: "#5A3A19",
+          900: "#3D2711",
         },
         secondary: {
           50: "#F9FAFB",
