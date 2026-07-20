@@ -51,3 +51,30 @@ export async function dangKyStudio(body) {
     throw err;
   }
 }
+
+export async function quenMatKhauGuiEmail(body) {
+  try {
+    logger.info("[quenMatKhauGuiEmail] Request body:", body);
+    const response = await http.post("/public/quen-mat-khau/gui-otp", body);
+    logger.info("[quenMatKhauGuiEmail] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[quenMatKhauGuiEmail] Error:", err?.response?.data || err);
+    throw err;
+  }
+}
+
+export async function OTPMatKhau(body) {
+  try {
+    logger.info("[OTPMatKhau] Request body:", body);
+    const response = await http.post(
+      "/public/quen-mat-khau/xac-nhan-otp",
+      body,
+    );
+    logger.info("[OTPMatKhau] Response:", response.data);
+    return response.data;
+  } catch (err) {
+    logger.error("[OTPMatKhau] Error:", err?.response?.data || err);
+    throw err;
+  }
+}
