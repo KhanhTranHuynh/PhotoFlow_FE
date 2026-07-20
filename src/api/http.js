@@ -55,14 +55,12 @@ async function refreshAccessToken() {
     try {
       logger.info("[refreshAccessToken] refreshing...");
 
-      // Dùng axios "thô" để tránh loop interceptor
       const res = await axios.post(
         `${config.HOST}/auth/refresh-token`,
         { refreshToken },
         { headers: { "Content-Type": "application/json" } },
       );
 
-      // set cookie access/refresh mới
       setToken_rToken(res.data);
 
       const newAccessToken = res?.data?.data?.accessToken || null;
@@ -80,15 +78,17 @@ async function refreshAccessToken() {
   return refreshPromise;
 }
 
-// Request interceptor: attach token
+// Request interceptor: attach access token + refresh token
 http.interceptors.request.use(
   (req) => {
     const token = getAccessToken();
+    const refreshToken = getRefreshToken(); // ✅ lấy refresh token
 
     req.headers = req.headers || {};
     req.headers["Content-Type"] =
       req.headers["Content-Type"] || "application/json";
     if (token) req.headers["Authorization"] = `Bearer ${token}`;
+    if (refreshToken) req.headers["rtoken"] = refreshToken; // ✅ FIX: backend middleware đọc header "rtoken"
 
     return req;
   },
@@ -98,12 +98,11 @@ http.interceptors.request.use(
 // Response interceptor
 http.interceptors.response.use(
   (response) => {
-    // Bỏ qua blob/file response
     if (response.config?.responseType === "blob") {
       return response;
     }
 
-    // Nếu backend trả token mới thì auto set
+    // Case cũ: token nằm trong response.data.data.{accessToken,refreshToken}
     if (
       response?.data?.data?.accessToken ||
       response?.data?.data?.refreshToken
@@ -111,20 +110,31 @@ http.interceptors.response.use(
       setToken_rToken(response.data);
     }
 
+    // ✅ FIX: case mới — xacThucJWT middleware tự refresh khi access token
+    // hết hạn (nhánh 2), trả cặp token mới qua res.locals.tokenMoi ->
+    // guiPhanHoi() nhúng vào TOP-LEVEL "token" / "rToken" của response
+    // body (không lồng trong "data"). Phải bắt case này để lưu lại,
+    // nếu không lần request sau vẫn dùng access token cũ đã hết hạn.
+    if (response?.data?.token || response?.data?.rToken) {
+      setToken_rToken({
+        data: {
+          accessToken: response.data.token,
+          refreshToken: response.data.rToken,
+        },
+      });
+    }
+
     return response;
   },
   async (error) => {
     const originalRequest = error?.config;
 
-    // Lỗi mạng/timeout không có response
     if (!error?.response) return Promise.reject(error);
 
-    // Không refresh cho các endpoint auth (tránh loop / hành vi sai khi login fail)
     if (isAuthEndpoint(originalRequest)) {
       return Promise.reject(error);
     }
 
-    // Token hết hạn/401 => refresh + retry (chỉ 1 lần)
     if (isTokenExpiredResponse(error) && !originalRequest?._retry) {
       originalRequest._retry = true;
 
@@ -142,7 +152,6 @@ http.interceptors.response.use(
       return http.request(originalRequest);
     }
 
-    // Vẫn 401/403 sau khi đã retry (hoặc 403 ngay từ đầu) => logout + về login
     if (isAuthErrorResponse(error)) {
       clearTokens();
       redirectToLogin();
