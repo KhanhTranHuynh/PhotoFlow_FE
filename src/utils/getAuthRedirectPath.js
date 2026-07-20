@@ -6,7 +6,7 @@ export function getAuthRedirectPath(roleCodes = []) {
     : [];
 
   if (codes.includes("khach_hang")) {
-    return "/trang-chu";
+    return "/kanban";
   }
 
   if (codes.includes("chu_studio")) {
