@@ -94,6 +94,9 @@ import { unlockAudio } from "@/helpers/notificationSound";
 
 import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
 
+import { ApiRequestManager } from "@/api/ApiRequestManager";
+import GlobalOverlayLoading from "@/components/GlobalOverlayLoading";
+
 // home pages  & dashboard
 
 const TrangChu = lazyRetry(() => import("./pages/main/trang-chu"));
@@ -187,6 +190,31 @@ function App() {
   const authInitialized = useSelector((state) => state.auth.authInitialized);
   const user = useSelector((state) => state.auth.user);
 
+  // ✅ State loading toàn app cho ApiRequestManager
+  const [globalLoading, setGlobalLoading] = useState(false);
+
+  useEffect(() => {
+    // Cấu hình 1 lần: giới hạn 10 batch song song, mặc định không tự bật overlay
+    // (bật overlay theo từng lần gọi qua showOverlay: true)
+    ApiRequestManager.configure({
+      maxConcurrentBatches: 10,
+      defaultShowOverlay: false,
+      onCallbackError: (error, request) => {
+        console.error(
+          "[ApiRequestManager callback error]",
+          request.apiUrl,
+          error,
+        );
+      },
+    });
+
+    const cleanup = ApiRequestManager.setOverlayHandler((visible) => {
+      setGlobalLoading(visible);
+    });
+
+    return cleanup;
+  }, []);
+
   useEffect(() => {
     const token = getCookie("accessToken");
     if (token) {
@@ -238,6 +266,8 @@ function App() {
 
   return (
     <main className="App relative">
+      {globalLoading && <GlobalOverlayLoading />}
+
       {/* <ErrorBoundary FallbackComponent={ErrorFallback}> */}
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
