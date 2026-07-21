@@ -62,7 +62,7 @@ const Navmenu = ({ menus }) => {
 
           return (
             <li
-              key={i}
+              key={item.key ?? i}
               className={`single-sidebar-menu 
                 ${item.child || item.megamenu ? "item-has-children" : ""}
                 ${activeSubmenu === i ? "open" : ""}
@@ -170,9 +170,9 @@ const Navmenu = ({ menus }) => {
               {item.megamenu && (
                 <Collapse isOpened={activeSubmenu === i}>
                   <ul className="sub-menu">
-                    {item.megamenu.flatMap((group) =>
+                    {item.megamenu.flatMap((group, gIndex) =>
                       (group.singleMegamenu || []).map((child, j) => (
-                        <li key={j}>
+                        <li key={child.m_childlink ?? `${gIndex}-${j}`}>
                           <NavLink
                             to={child.m_childlink}
                             className={({ isActive }) =>
