@@ -1,14 +1,11 @@
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { menuRoles } from "@/configs/menu-role";
+import { getUserRoleCodes } from "@/utils/getUserRoleCodes";
 
 export default function ProtectedRoute({ menuKey, children }) {
-  const roles = useSelector((state) => state.auth.user?.roles || []);
-  const roleCodes = roles.map((item) => item.code);
-
-  if (roleCodes.includes("ADMIN")) {
-    return children;
-  }
+  const user = useSelector((state) => state.auth.user);
+  const roleCodes = getUserRoleCodes(user);
 
   const allowRoles = menuRoles[menuKey] || [];
   const hasPermission = allowRoles.some((role) => roleCodes.includes(role));

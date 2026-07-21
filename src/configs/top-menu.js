@@ -1,5 +1,35 @@
 export const topMenu = [
   {
+    key: "trang_chu",
+    title: "Trang chủ",
+    icon: "heroicons-outline:home",
+    link: "/trang-chu",
+  },
+  {
+    key: "nhan_vien",
+    title: "Nhân viên",
+    icon: "heroicons-outline:users",
+    link: "/nhan-vien",
+  },
+  {
+    key: "khach_hang",
+    title: "Khách hàng",
+    icon: "heroicons-outline:users",
+    link: "/khach-hang",
+  },
+  {
+    key: "album",
+    title: "Album",
+    icon: "heroicons-outline:photograph",
+    link: "/album",
+  },
+  {
+    key: "log",
+    title: "Log",
+    icon: "heroicons-outline:document-text",
+    link: "/log",
+  },
+  {
     key: "pages",
     title: "Pages",
     icon: "heroicons-outline:view-boards",

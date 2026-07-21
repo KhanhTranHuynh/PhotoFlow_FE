@@ -96,6 +96,12 @@ import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
 
 // home pages  & dashboard
 
+const TrangChu = lazyRetry(() => import("./pages/main/trang-chu"));
+const KhachHang = lazyRetry(() => import("./pages/main/khach-hang"));
+const NhanVien = lazyRetry(() => import("./pages/main/nhan-vien"));
+const Album = lazyRetry(() => import("./pages/main/album"));
+const Log = lazyRetry(() => import("./pages/main/log"));
+
 const Login = lazyRetry(() => import("./pages/auth/login"));
 const Register = lazyRetry(() => import("./pages/auth/register"));
 const ForgotPassword = lazyRetry(() => import("./pages/auth/forgot-password"));
@@ -283,6 +289,47 @@ function App() {
           />
 
           <Route path="/*" element={<Layout />}>
+            <Route
+              path="trang-chu"
+              element={
+                <ProtectedRoute menuKey="trang_chu">
+                  <TrangChu />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="nhan-vien"
+              element={
+                <ProtectedRoute menuKey="nhan_vien">
+                  <NhanVien />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="khach-hang"
+              element={
+                <ProtectedRoute menuKey="khach_hang">
+                  <KhachHang />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="album"
+              element={
+                <ProtectedRoute menuKey="album">
+                  <Album />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="log"
+              element={
+                <ProtectedRoute menuKey="log">
+                  <Log />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="ecommerce" element={<Ecommerce />} />
             <Route path="crm" element={<CrmPage />} />
