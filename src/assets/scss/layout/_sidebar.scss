@@ -55,7 +55,7 @@
     @apply text-slate-800 dark:text-slate-300 text-xs font-semibold uppercase mb-4 mt-4;
   }
   > .menu-link {
-    @apply flex text-slate-600 font-medium dark:text-slate-300 text-sm capitalize px-[10px] py-3 rounded-[4px] cursor-pointer relative transition-colors duration-200;
+    @apply flex text-slate-600 font-medium dark:text-slate-300 text-sm capitalize px-[10px] py-3 rounded-[10px] cursor-pointer relative transition-colors duration-200;
   }
   .menu-icon {
     @apply icon-box inline-flex items-center text-slate-600 dark:text-slate-300 text-lg ltr:mr-3 rtl:ml-3;
@@ -82,7 +82,7 @@
   }
   .single-sidebar-menu {
     .text-box {
-      @apply absolute  left-full ml-5 w-[180px] top-0 px-4 py-3 bg-white shadow-dropdown rounded-[4px] dark:bg-slate-800 z-[999] invisible opacity-0 transition-all duration-150;
+      @apply absolute  left-full ml-5 w-[180px] top-0 px-4 py-3 bg-white shadow-dropdown rounded-[10px] dark:bg-slate-800 z-[999] invisible opacity-0 transition-all duration-150;
     }
     &:hover {
       .text-box {
@@ -96,7 +96,7 @@
     }
 
     ul.sub-menu {
-      @apply ml-4 absolute left-full top-0 w-[230px] bg-white shadow-dropdown rounded-[4px] dark:bg-slate-800 z-[999] px-4 pt-3 transition-all duration-150 invisible opacity-0;
+      @apply ml-4 absolute left-full top-0 w-[230px] bg-white shadow-dropdown rounded-[10px] dark:bg-slate-800 z-[999] px-4 pt-3 transition-all duration-150 invisible opacity-0;
       display: block !important;
     }
     &:hover {
