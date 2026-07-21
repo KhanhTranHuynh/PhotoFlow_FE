@@ -236,7 +236,8 @@ const NhanVien = () => {
 
       // --- Xử lý kết quả danh sách vai trò (options cho filter) ---
       if (vaiTroResult.status === "fulfilled") {
-        const list = vaiTroResult.value?.du_lieu ?? vaiTroResult.value ?? [];
+        const list =
+          vaiTroResult.value?.data?.du_lieu ?? vaiTroResult.value ?? [];
         setVaiTroOptions(Array.isArray(list) ? list : []);
       } else if (vaiTroResult.reason?.code !== "ERR_CANCELED") {
         setVaiTroOptions([]);
