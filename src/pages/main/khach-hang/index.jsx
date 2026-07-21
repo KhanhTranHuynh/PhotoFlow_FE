@@ -1,17 +1,9 @@
 import React from "react";
 import TabsWithIcon from "@/components/ui/TabsWithIcon";
-import DanhMucKhachHang from "@/pages/main/khach-hang/danh-muc-khach-hang";
-import KhachHangListPage from "@/pages/main/khach-hang/khach-hang";
-import usePermission from "@/hooks/usePermission";
+import KhachHangListPage from "./khach-hang";
 
 const KhachHangPage = () => {
   const tabItems = [
-    {
-      title: "Nhóm khách hàng",
-      icon: "heroicons-outline:user-group",
-      content: <DanhMucKhachHang />,
-    },
-
     {
       title: "Khách hàng",
       icon: "heroicons-outline:user",
