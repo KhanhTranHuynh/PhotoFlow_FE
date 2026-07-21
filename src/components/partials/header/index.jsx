@@ -59,7 +59,7 @@ const Header = ({ className = "custom-class" }) => {
   return (
     <header className={className + " " + navbarTypeClass()}>
       <div
-        className={` app-header md:px-6 px-[15px]  dark:bg-slate-800 shadow-base dark:shadow-base3 bg-primary-600
+        className={` app-header md:px-6 px-[15px]  dark:bg-slate-800 shadow-base dark:shadow-base3 bg-white
         ${borderSwicthClass()}
              ${
                menuType === "horizontal" && width > breakpoints.xl
@@ -92,7 +92,7 @@ const Header = ({ className = "custom-class" }) => {
                   <Icon icon="heroicons-outline:menu-alt-3" />
                 </div>
               )}
-              <SearchModal />
+              {/* <SearchModal /> */}
             </div>
           )}
           {/* For Horizontal  */}
@@ -124,6 +124,8 @@ const Header = ({ className = "custom-class" }) => {
             {/* <ChangeLanguage /> */}
 
             {/* {width >= breakpoints.md && <Setting />} */}
+            <div className="mx-3 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+
             {width >= breakpoints.md && <Profile />}
             {width < breakpoints.md && <Profile />}
             {/* {width <= breakpoints.md && (
