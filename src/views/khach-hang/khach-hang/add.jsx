@@ -5,10 +5,10 @@ import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
+import { useDispatch, useSelector } from "react-redux";
 
 import { TaoKhachHangMoi } from "@/store/api/khach-hang";
 import { DanhSachDanhMucKhachHang } from "@/store/api/khach-hang";
-import apiHelper from "@/helpers/apiHelper";
 
 import { notifyApiByErrorCode } from "@/utils/api-toast";
 
@@ -32,10 +32,11 @@ const INITIAL_FORM = {
 const AddKhachHangModal = ({
   activeModal,
   onClose,
-  idStudioLocal,
   categoryOptions = [],
   onCreated,
 }) => {
+  const user = useSelector((state) => state.auth.user);
+
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [categoryData, setCategoryData] = useState([]);
@@ -68,11 +69,12 @@ const AddKhachHangModal = ({
             trang: 1,
             so_luong: 100,
             dang_hoat_dong: true,
-            id_studio_local: idStudioLocal,
+            id_studio_local: user?.id_studio_local,
           },
           controller.signal,
         );
-        const items = apiHelper.extractList(res);
+        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
+        const items = res?.data?.du_lieu;
         setCategoryData(Array.isArray(items) ? items : []);
       } catch (err) {
         if (err?.code !== "ERR_CANCELED") {
@@ -87,7 +89,7 @@ const AddKhachHangModal = ({
 
     return () => controller.abort();
     // dùng .length thay vì cả mảng categoryOptions để tránh đổi reference mỗi render
-  }, [activeModal, categoryOptions.length, idStudioLocal]);
+  }, [activeModal, categoryOptions.length, user?.id_studio_local]);
 
   const categorySelectOptions = useMemo(() => {
     const src =
@@ -96,8 +98,8 @@ const AddKhachHangModal = ({
         : categoryData;
 
     return src.map((item) => ({
-      label: item?.name || item?.code || "",
-      value: item?.id || item?.code || "",
+      label: item?.ten_hien_thi || item?.ma_danh_muc || "",
+      value: item?.id_danh_muc_khach_hang || item?.ma_danh_muc || "",
     }));
   }, [categoryOptions, categoryData]);
 
@@ -136,10 +138,6 @@ const AddKhachHangModal = ({
       nextErrors.so_dien_thoai_lien_he = "Số điện thoại liên hệ không hợp lệ";
     }
 
-    if (!idStudioLocal) {
-      nextErrors.id_studio_local = "Thiếu id_studio_local";
-    }
-
     setErrors(nextErrors);
     return nextErrors;
   };
@@ -170,13 +168,14 @@ const AddKhachHangModal = ({
   });
 
   const handleSave = () => {
-    if (isPending) return;
+    console.log("handleSave called");
+    // if (isPending) return;
 
-    const nextErrors = validate();
-    if (Object.keys(nextErrors).length > 0) return;
+    // const nextErrors = validate();
+    // if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
-      id_studio_local: idStudioLocal,
+      id_studio_local: user?.id_studio_local,
       ho_ten: form.ho_ten.trim(),
       so_dien_thoai: form.so_dien_thoai.trim(),
       mat_khau: form.mat_khau.trim(),

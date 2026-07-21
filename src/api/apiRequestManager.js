@@ -1,5 +1,17 @@
 // src/api/ApiRequestManager.js
 import http from "@/api/http"; // 👈 dùng lại axios instance đã có interceptor auth/refresh
+import logger from "@/helpers/logger";
+
+const LOG_TAG = "[ApiRequestManager]";
+
+/**
+ * Tạo tag log dạng "[METHOD apiUrl]" để biết ngay log đang nói về API nào,
+ * không cần mở object data ra xem.
+ * VD: buildApiTag("POST", "/users/login") -> "[POST /users/login]"
+ */
+function buildApiTag(method, apiUrl) {
+  return `[${String(method ?? "POST").toUpperCase()} ${apiUrl ?? "unknown"}]`;
+}
 
 /**
  * ApiRequestManager
@@ -11,6 +23,7 @@ import http from "@/api/http"; // 👈 dùng lại axios instance đã có inter
  *  - Quản lý overlay loading toàn app bằng reference counter.
  *  - Callback success/error độc lập từng request.
  *  - Hỗ trợ AbortController (signal).
+ *  - Ghi log toàn bộ vòng đời batch/request qua `logger` (helpers/logger).
  *
  * Không tự tạo axios instance riêng. Toàn bộ request đi qua `http` (http.js)
  * để không mất cơ chế gắn token / refresh token / redirect login khi 401-403.
@@ -24,6 +37,9 @@ export class ApiRequestManager {
     defaultHeaders: {},
     onOverlayChange: undefined,
     onCallbackError: undefined,
+    // Bật/tắt log chi tiết từng request (payload, response...). Mặc định false
+    // để tránh log rò rỉ dữ liệu nhạy cảm ở production.
+    verboseRequestLogging: false,
   };
 
   static batchQueue = [];
@@ -57,10 +73,21 @@ export class ApiRequestManager {
       !Number.isInteger(this.config.maxConcurrentBatches) ||
       this.config.maxConcurrentBatches < 1
     ) {
-      throw new Error(
+      const err = new Error(
         "ApiRequestManager.maxConcurrentBatches must be an integer >= 1.",
       );
+      logger.error?.(`${LOG_TAG} configure() invalid config`, {
+        maxConcurrentBatches: this.config.maxConcurrentBatches,
+        error: err.message,
+      });
+      throw err;
     }
+
+    logger.info?.(`${LOG_TAG} configure()`, {
+      maxConcurrentBatches: this.config.maxConcurrentBatches,
+      defaultShowOverlay: this.config.defaultShowOverlay,
+      verboseRequestLogging: this.config.verboseRequestLogging,
+    });
 
     // Nếu tăng concurrency lúc queue đang có dữ liệu, lấy thêm batch chạy ngay.
     this.schedule();
@@ -72,10 +99,12 @@ export class ApiRequestManager {
    */
   static setOverlayHandler(handler) {
     this.config.onOverlayChange = handler;
+    logger.debug?.(`${LOG_TAG} setOverlayHandler() attached`);
 
     return () => {
       if (this.config.onOverlayChange === handler) {
         this.config.onOverlayChange = undefined;
+        logger.debug?.(`${LOG_TAG} setOverlayHandler() cleanup`);
       }
     };
   }
@@ -102,6 +131,15 @@ export class ApiRequestManager {
     // Copy mảng để caller thay đổi apiList bên ngoài không ảnh hưởng batch đã enqueue.
     const apiList = [...options.apiList];
 
+    logger.info?.(`${LOG_TAG} sendRequests() enqueue`, {
+      batchId,
+      parallel: options.parallel,
+      requestCount: apiList.length,
+      showOverlay: options.showOverlay,
+      stopOnError: options.stopOnError ?? false,
+      queueSizeBefore: this.batchQueue.length,
+    });
+
     return new Promise((resolve, reject) => {
       this.batchQueue.push({
         options: {
@@ -111,8 +149,22 @@ export class ApiRequestManager {
           stopOnError: options.stopOnError ?? false,
           batchId,
         },
-        resolve,
-        reject,
+        resolve: (result) => {
+          logger.info?.(`${LOG_TAG} sendRequests() batch resolved`, {
+            batchId,
+            successCount: result.successCount,
+            errorCount: result.errorCount,
+            skippedCount: result.skippedCount,
+          });
+          resolve(result);
+        },
+        reject: (error) => {
+          logger.error?.(`${LOG_TAG} sendRequests() batch rejected`, {
+            batchId,
+            error: error?.message ?? error,
+          });
+          reject(error);
+        },
       });
 
       this.schedule();
@@ -129,18 +181,33 @@ export class ApiRequestManager {
 
   static validateSendOptions(options) {
     if (!options) {
-      throw new Error("ApiRequestManager.sendRequests options is required.");
+      const err = new Error(
+        "ApiRequestManager.sendRequests options is required.",
+      );
+      logger.error?.(`${LOG_TAG} validateSendOptions() failed`, {
+        error: err.message,
+      });
+      throw err;
     }
 
     if (!Array.isArray(options.apiList)) {
-      throw new Error(
+      const err = new Error(
         "ApiRequestManager.sendRequests apiList must be an array.",
       );
+      logger.error?.(`${LOG_TAG} validateSendOptions() failed`, {
+        error: err.message,
+      });
+      throw err;
     }
 
     options.apiList.forEach((request, index) => {
       if (!request?.apiUrl?.trim()) {
-        throw new Error(`apiList[${index}].apiUrl is required.`);
+        const err = new Error(`apiList[${index}].apiUrl is required.`);
+        logger.error?.(`${LOG_TAG} validateSendOptions() failed`, {
+          index,
+          error: err.message,
+        });
+        throw err;
       }
     });
   }
@@ -160,12 +227,23 @@ export class ApiRequestManager {
 
       this.activeBatchCount++;
 
+      logger.debug?.(`${LOG_TAG} schedule() start batch`, {
+        batchId: task.options.batchId,
+        activeBatchCount: this.activeBatchCount,
+        remainingQueueSize: this.batchQueue.length,
+      });
+
       this.executeBatch(task.options)
         .then(task.resolve)
         .catch(task.reject)
         .finally(() => {
           task.options.apiList.length = 0;
           this.activeBatchCount--;
+          logger.debug?.(`${LOG_TAG} schedule() finished batch`, {
+            batchId: task.options.batchId,
+            activeBatchCount: this.activeBatchCount,
+            remainingQueueSize: this.batchQueue.length,
+          });
           this.schedule();
         });
     }
@@ -174,6 +252,8 @@ export class ApiRequestManager {
   static async executeBatch(options) {
     const batchShowOverlay =
       options.showOverlay ?? this.config.defaultShowOverlay ?? false;
+
+    const startedAt = Date.now();
 
     if (batchShowOverlay) {
       this.acquireOverlay();
@@ -198,6 +278,27 @@ export class ApiRequestManager {
         else if (result.status === "skipped") skippedCount++;
       }
 
+      const durationMs = Date.now() - startedAt;
+
+      logger.info?.(`${LOG_TAG} executeBatch() done`, {
+        batchId: options.batchId,
+        parallel: options.parallel,
+        successCount,
+        errorCount,
+        skippedCount,
+        durationMs,
+      });
+
+      if (errorCount > 0) {
+        logger.warn?.(`${LOG_TAG} executeBatch() completed with errors`, {
+          batchId: options.batchId,
+          errorCount,
+          failedRequests: results
+            .filter((r) => r.status === "error")
+            .map((r) => ({ key: r.key, statusCode: r.statusCode })),
+        });
+      }
+
       return {
         batchId: options.batchId,
         parallel: options.parallel,
@@ -206,6 +307,12 @@ export class ApiRequestManager {
         skippedCount,
         results,
       };
+    } catch (error) {
+      logger.error?.(`${LOG_TAG} executeBatch() unexpected failure`, {
+        batchId: options.batchId,
+        error: error?.message ?? error,
+      });
+      throw error;
     } finally {
       if (batchShowOverlay) {
         this.releaseOverlay();
@@ -220,6 +327,13 @@ export class ApiRequestManager {
 
     return settled.map((item, index) => {
       if (item.status === "fulfilled") return item.value;
+      logger.error?.(
+        `${LOG_TAG} executeParallel() request threw unexpectedly`,
+        {
+          apiUrl: apiList[index]?.apiUrl,
+          error: item.reason?.message ?? item.reason,
+        },
+      );
       return this.createUnexpectedErrorResult(apiList[index], item.reason);
     });
   }
@@ -233,6 +347,11 @@ export class ApiRequestManager {
       results.push(result);
 
       if (stopOnError && result.status === "error") {
+        logger.warn?.(`${LOG_TAG} executeSequential() stopOnError triggered`, {
+          apiUrl: request.apiUrl,
+          skippedCount: apiList.length - index - 1,
+        });
+
         for (
           let skipIndex = index + 1;
           skipIndex < apiList.length;
@@ -255,6 +374,8 @@ export class ApiRequestManager {
   static async executeRequest(request, batchShowOverlay) {
     const method = request.method ?? "POST";
     const key = this.getRequestKey(request, method);
+    const apiTag = buildApiTag(method, request.apiUrl);
+    const startedAt = Date.now();
 
     // Nếu batch đã bật overlay thì request không tăng ref count nữa.
     const requestShowOverlay =
@@ -263,6 +384,11 @@ export class ApiRequestManager {
     if (requestShowOverlay) {
       this.acquireOverlay();
     }
+
+    logger.debug?.(`${LOG_TAG} ${apiTag} executeRequest() start`, {
+      key,
+      ...(this.config.verboseRequestLogging ? { params: request.params } : {}),
+    });
 
     try {
       const requestData = request.dataFactory
@@ -284,6 +410,21 @@ export class ApiRequestManager {
         signal: request.signal,
       });
 
+      const durationMs = Date.now() - startedAt;
+
+      logger.info?.(`${LOG_TAG} ${apiTag} executeRequest() success`, {
+        key,
+        statusCode: response.status,
+        durationMs,
+      });
+
+      if (this.config.verboseRequestLogging) {
+        logger.debug?.(`${LOG_TAG} ${apiTag} executeRequest() response data`, {
+          key,
+          data: response.data,
+        });
+      }
+
       await this.safeSuccessCallback(request, response);
 
       return {
@@ -296,6 +437,22 @@ export class ApiRequestManager {
       };
     } catch (error) {
       const errorInfo = this.normalizeError(error);
+      const durationMs = Date.now() - startedAt;
+
+      if (errorInfo.isCanceled) {
+        logger.warn?.(`${LOG_TAG} ${apiTag} executeRequest() canceled`, {
+          key,
+          durationMs,
+        });
+      } else {
+        logger.error?.(`${LOG_TAG} ${apiTag} executeRequest() failed`, {
+          key,
+          statusCode: errorInfo.statusCode,
+          message: errorInfo.message,
+          durationMs,
+        });
+      }
+
       await this.safeErrorCallback(request, errorInfo);
 
       return {
@@ -318,6 +475,10 @@ export class ApiRequestManager {
     try {
       await request.successCallBack(response.data, response, request);
     } catch (error) {
+      logger.error?.(`${LOG_TAG} successCallBack threw`, {
+        apiUrl: request.apiUrl,
+        error: error?.message ?? error,
+      });
       this.handleCallbackError(error, request);
     }
   }
@@ -327,6 +488,10 @@ export class ApiRequestManager {
     try {
       await request.errorCallBack(errorInfo, request);
     } catch (error) {
+      logger.error?.(`${LOG_TAG} errorCallBack threw`, {
+        apiUrl: request.apiUrl,
+        error: error?.message ?? error,
+      });
       this.handleCallbackError(error, request);
     }
   }
@@ -334,8 +499,12 @@ export class ApiRequestManager {
   static handleCallbackError(error, request) {
     try {
       this.config.onCallbackError?.(error, request);
-    } catch {
+    } catch (handlerError) {
       // Không để lỗi của error handler làm hỏng scheduler.
+      logger.error?.(`${LOG_TAG} onCallbackError handler threw`, {
+        apiUrl: request?.apiUrl,
+        error: handlerError?.message ?? handlerError,
+      });
     }
   }
 
@@ -398,12 +567,18 @@ export class ApiRequestManager {
 
   static acquireOverlay() {
     this.overlayRefCount++;
+    logger.debug?.(`${LOG_TAG} acquireOverlay()`, {
+      overlayRefCount: this.overlayRefCount,
+    });
     if (this.overlayRefCount !== 1) return;
 
     try {
       this.config.onOverlayChange?.(true);
-    } catch {
+    } catch (error) {
       // Overlay UI lỗi không được làm hỏng scheduler.
+      logger.error?.(`${LOG_TAG} onOverlayChange(true) threw`, {
+        error: error?.message ?? error,
+      });
     }
   }
 
@@ -414,12 +589,18 @@ export class ApiRequestManager {
     }
 
     this.overlayRefCount--;
+    logger.debug?.(`${LOG_TAG} releaseOverlay()`, {
+      overlayRefCount: this.overlayRefCount,
+    });
     if (this.overlayRefCount !== 0) return;
 
     try {
       this.config.onOverlayChange?.(false);
-    } catch {
+    } catch (error) {
       // Overlay UI lỗi không được làm hỏng scheduler.
+      logger.error?.(`${LOG_TAG} onOverlayChange(false) threw`, {
+        error: error?.message ?? error,
+      });
     }
   }
 }
