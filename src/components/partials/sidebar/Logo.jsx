@@ -35,23 +35,23 @@ const SidebarLogo = ({ menuHover }) => {
         <div className="flex items-center space-x-4">
           <div className="logo-icon">
             {!isDark && !isSemiDark ? (
-              <img src={MobileLogo} alt="" />
+              <img src={MobileLogo} alt="logo" />
             ) : (
-              <img src={MobileLogoWhite} alt="" />
+              <img src={MobileLogoWhite} alt="logo" />
             )}
           </div>
 
-          {(!collapsed || menuHover) && (
+          {/* {(!collapsed || menuHover) && (
             <div>
               <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 DashCode
               </h1>
             </div>
-          )}
+          )} */}
         </div>
       </Link>
 
-      {(!collapsed || menuHover) && (
+      {/* {(!collapsed || menuHover) && (
         <div
           onClick={() => setMenuCollapsed(!collapsed)}
           className={`h-4 w-4 border-[1.5px] border-slate-900 dark:border-slate-700 rounded-full transition-all duration-150
@@ -61,7 +61,7 @@ const SidebarLogo = ({ menuHover }) => {
               : "ring-2 ring-inset ring-offset-4 ring-black-900 dark:ring-slate-400 bg-slate-900 dark:bg-slate-400 dark:ring-offset-slate-700"
           }
           `}></div>
-      )}
+      )} */}
     </div>
   );
 };
