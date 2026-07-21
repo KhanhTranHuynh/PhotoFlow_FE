@@ -177,7 +177,7 @@ const Navmenu = ({ menus }) => {
                             to={child.m_childlink}
                             className={({ isActive }) =>
                               `block text-sm py-2 px-4 ${
-                                isActive ? "text-primary font-semibold" : ""
+                                isActive ? "text-primary-500 font-semibold" : ""
                               }`
                             }>
                             {child.m_childtitle}
