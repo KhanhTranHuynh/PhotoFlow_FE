@@ -8,7 +8,7 @@ import { handleLogout, logoutWithApi } from "../../../../store/redux/auth";
 import { getAvatarInitials } from "@/utils/getAvatarInitials";
 
 const profileLabel = (user, { alwaysShowName = false } = {}) => {
-  const displayName = user?.fullname || user?.so_dien_thoai || "Người dùng";
+  const displayName = user?.ho_ten || user?.so_dien_thoai || "Người dùng";
   const avatarText = getAvatarInitials(displayName);
 
   const nameWrapperClass = alwaysShowName ? "flex" : "md:flex hidden";

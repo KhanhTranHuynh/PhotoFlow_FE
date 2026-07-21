@@ -7,7 +7,10 @@ import {
   setToken_rToken,
   clearTokens,
 } from "@/utils/authTokens";
-import { isTokenExpiredResponse } from "@/api/isTokenExpired";
+import {
+  isTokenExpiredResponse,
+  isAuthErrorResponse,
+} from "@/api/isTokenExpired";
 
 const http = axios.create({
   baseURL: config.HOST,
@@ -21,22 +24,9 @@ const AUTH_PATHS_NO_REFRESH = [
   "/auth/refresh-token",
 ];
 
-function isAuthEndpoint(config) {
-  const url = String(config?.url || "");
+function isAuthEndpoint(cfg) {
+  const url = String(cfg?.url || "");
   return AUTH_PATHS_NO_REFRESH.some((p) => url.includes(p));
-}
-
-function isAuthErrorResponse(err) {
-  const r = err?.response;
-  const httpStatus = r?.status;
-  const statusCodeInBody = r?.data?.statusCode;
-
-  return (
-    httpStatus === 401 ||
-    httpStatus === 403 ||
-    statusCodeInBody === 401 ||
-    statusCodeInBody === 403
-  );
 }
 
 function redirectToLogin() {
@@ -48,25 +38,27 @@ function redirectToLogin() {
 async function refreshAccessToken() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
-
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {
     try {
       logger.info("[refreshAccessToken] refreshing...");
-
       const res = await axios.post(
         `${config.HOST}/auth/refresh-token`,
         { refreshToken },
         { headers: { "Content-Type": "application/json" } },
       );
 
-      setToken_rToken(res.data);
+      // PhanHoiChuan: token/rToken nằm TOP-LEVEL, không lồng trong data
+      setToken_rToken({
+        data: {
+          accessToken: res?.data?.token,
+          refreshToken: res?.data?.rToken,
+        },
+      });
 
-      const newAccessToken = res?.data?.data?.accessToken || null;
       logger.info("[refreshAccessToken] success");
-
-      return newAccessToken;
+      return res?.data?.token || null;
     } catch (e) {
       logger.error("[refreshAccessToken] failed", e?.response?.data || e);
       return null;
@@ -78,81 +70,109 @@ async function refreshAccessToken() {
   return refreshPromise;
 }
 
-// Request interceptor: attach access token + refresh token
 http.interceptors.request.use(
   (req) => {
     const token = getAccessToken();
-    const refreshToken = getRefreshToken(); // ✅ lấy refresh token
+    const refreshToken = getRefreshToken();
 
     req.headers = req.headers || {};
     req.headers["Content-Type"] =
       req.headers["Content-Type"] || "application/json";
     if (token) req.headers["Authorization"] = `Bearer ${token}`;
-    if (refreshToken) req.headers["rtoken"] = refreshToken; // ✅ FIX: backend middleware đọc header "rtoken"
+    if (refreshToken) req.headers["rtoken"] = refreshToken;
 
     return req;
   },
   (error) => Promise.reject(error),
 );
 
-// Response interceptor
+/**
+ * BE luôn trả HTTP 200 (xem guiPhanHoi), phân biệt lỗi/thành công bằng
+ * `body.code`. Case "hết hạn token / không có quyền" nay nằm ở NHÁNH
+ * SUCCESS của axios (vì status vẫn 200), nên phải xử lý refresh/redirect
+ * ngay trong nhánh success, không chỉ ở nhánh error như trước.
+ *
+ * @returns "retry" | "redirected" | null
+ */
+async function handleAuthCode(body, originalRequest) {
+  if (isAuthEndpoint(originalRequest)) return null;
+
+  const code = body?.code;
+
+  if (isTokenExpiredResponse(code) && !originalRequest?._retry) {
+    originalRequest._retry = true;
+    const newAccessToken = await refreshAccessToken();
+
+    if (!newAccessToken) {
+      clearTokens();
+      redirectToLogin();
+      return "redirected";
+    }
+
+    originalRequest.headers = originalRequest.headers || {};
+    originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+    return "retry";
+  }
+
+  if (isAuthErrorResponse(code, undefined)) {
+    clearTokens();
+    redirectToLogin();
+    return "redirected";
+  }
+
+  return null;
+}
+
 http.interceptors.response.use(
-  (response) => {
-    if (response.config?.responseType === "blob") {
-      return response;
-    }
+  async (response) => {
+    if (response.config?.responseType === "blob") return response;
 
-    // Case cũ: token nằm trong response.data.data.{accessToken,refreshToken}
-    if (
-      response?.data?.data?.accessToken ||
-      response?.data?.data?.refreshToken
-    ) {
-      setToken_rToken(response.data);
-    }
+    const body = response.data;
 
-    // ✅ FIX: case mới — xacThucJWT middleware tự refresh khi access token
-    // hết hạn (nhánh 2), trả cặp token mới qua res.locals.tokenMoi ->
-    // guiPhanHoi() nhúng vào TOP-LEVEL "token" / "rToken" của response
-    // body (không lồng trong "data"). Phải bắt case này để lưu lại,
-    // nếu không lần request sau vẫn dùng access token cũ đã hết hạn.
-    if (response?.data?.token || response?.data?.rToken) {
+    // Token gối đầu (middleware tự cấp lại token trong lúc request đang chạy)
+    if (body?.token || body?.rToken) {
       setToken_rToken({
-        data: {
-          accessToken: response.data.token,
-          refreshToken: response.data.rToken,
-        },
+        data: { accessToken: body.token, refreshToken: body.rToken },
       });
+    }
+
+    if (typeof body?.code === "number" && body.code < 0) {
+      const action = await handleAuthCode(body, response.config);
+
+      if (action === "retry") {
+        return http.request(response.config);
+      }
+      if (action === "redirected") {
+        return Promise.reject(
+          Object.assign(
+            new Error(body?.message || "Không có quyền truy cập."),
+            {
+              isAxiosError: true,
+              response,
+            },
+          ),
+        );
+      }
+      // code<0 nhưng không phải lỗi auth (validate, not found...)
+      // -> KHÔNG reject, trả nguyên response để envelope {code,message,data}
+      // chảy xuống caller nguyên vẹn. Caller tự đọc code để quyết định.
     }
 
     return response;
   },
   async (error) => {
     const originalRequest = error?.config;
-
     if (!error?.response) return Promise.reject(error);
 
-    if (isAuthEndpoint(originalRequest)) {
-      return Promise.reject(error);
-    }
+    const body = error.response?.data;
+    const action = await handleAuthCode(body, originalRequest);
 
-    if (isTokenExpiredResponse(error) && !originalRequest?._retry) {
-      originalRequest._retry = true;
+    if (action === "retry") return http.request(originalRequest);
 
-      const newAccessToken = await refreshAccessToken();
-
-      if (!newAccessToken) {
-        clearTokens();
-        redirectToLogin();
-        return Promise.reject(error);
-      }
-
-      originalRequest.headers = originalRequest.headers || {};
-      originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-
-      return http.request(originalRequest);
-    }
-
-    if (isAuthErrorResponse(error)) {
+    if (
+      action === null &&
+      isAuthErrorResponse(body?.code, error.response.status)
+    ) {
       clearTokens();
       redirectToLogin();
     }

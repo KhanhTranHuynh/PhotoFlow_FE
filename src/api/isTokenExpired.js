@@ -1,11 +1,17 @@
-export function isTokenExpiredResponse(err) {
-  const r = err?.response;
+// src/api/isTokenExpired.js
+// ⚠️ PLACEHOLDER — cần bạn xác nhận mã code thật của BE
+const MA_HET_HAN_TOKEN = [-401];
+const MA_KHONG_CO_QUYEN = [-403];
 
-  const httpStatus = r?.status;
-  const statusCodeInBody = r?.data?.statusCode; // bạn nói backend có statusCode
+export function isTokenExpiredResponse(code) {
+  return MA_HET_HAN_TOKEN.includes(code);
+}
 
-  if (httpStatus === 401) return true;
-  if (statusCodeInBody === 401) return true;
-
-  return false;
+export function isAuthErrorResponse(code, httpStatus) {
+  return (
+    httpStatus === 401 ||
+    httpStatus === 403 ||
+    MA_HET_HAN_TOKEN.includes(code) ||
+    MA_KHONG_CO_QUYEN.includes(code)
+  );
 }
