@@ -18,7 +18,7 @@ const PHONE_REGEX = /^0\d{9}$/;
 
 const INITIAL_FORM = {
   id: "",
-  ho_ten: "",
+  ten: "",
   so_dien_thoai: "",
   dia_chi: "",
   ghi_chu: "",
@@ -29,7 +29,7 @@ const INITIAL_FORM = {
 
 const buildFormFromItem = (item) => ({
   id: item?.id || "",
-  ho_ten: item?.ho_ten || "",
+  ten: item?.ten || "",
   so_dien_thoai: item?.so_dien_thoai || "",
   dia_chi: item?.dia_chi || "",
   ghi_chu: item?.ghi_chu || "",
@@ -53,6 +53,9 @@ const EditKhachHangModal = ({
 
   const queryClient = useQueryClient();
 
+  // Nếu component cha không truyền idStudioLocal, fallback lấy theo cách app đang dùng
+  const resolvedIdStudioLocal = idStudioLocal || apiHelper.getIdStudioLocal?.();
+
   useEffect(() => {
     if (activeModal) {
       setForm(buildFormFromItem(selectedItem));
@@ -74,7 +77,7 @@ const EditKhachHangModal = ({
             trang: 1,
             so_luong: 100,
             dang_hoat_dong: true,
-            id_studio_local: idStudioLocal,
+            id_studio_local: resolvedIdStudioLocal,
           },
           controller.signal,
         );
@@ -92,7 +95,7 @@ const EditKhachHangModal = ({
     fetchCategories();
 
     return () => controller.abort();
-  }, [activeModal, categoryOptions, idStudioLocal]);
+  }, [activeModal, categoryOptions, resolvedIdStudioLocal]);
 
   const categorySelectOptions = useMemo(() => {
     const src =
@@ -118,8 +121,8 @@ const EditKhachHangModal = ({
       nextErrors.id = "Thiếu id khách hàng";
     }
 
-    if (!form.ho_ten.trim()) {
-      nextErrors.ho_ten = "Vui lòng nhập họ tên";
+    if (!form.ten.trim()) {
+      nextErrors.ten = "Vui lòng nhập họ tên";
     }
 
     if (
@@ -167,7 +170,7 @@ const EditKhachHangModal = ({
 
     const payload = {
       id: form.id,
-      ho_ten: form.ho_ten.trim(),
+      ten: form.ten.trim(),
       ...(form.so_dien_thoai.trim() && {
         so_dien_thoai: form.so_dien_thoai.trim(),
       }),
@@ -216,9 +219,9 @@ const EditKhachHangModal = ({
             required
             label="Họ tên"
             placeholder="Nhập họ tên khách hàng"
-            value={form.ho_ten}
-            onChange={(e) => setField("ho_ten", e.target.value)}
-            error={errors.ho_ten ? { message: errors.ho_ten } : null}
+            value={form.ten}
+            onChange={(e) => setField("ten", e.target.value)}
+            error={errors.ten ? { message: errors.ten } : null}
           />
 
           <Textinput

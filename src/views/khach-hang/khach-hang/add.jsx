@@ -169,10 +169,10 @@ const AddKhachHangModal = ({
 
   const handleSave = () => {
     console.log("handleSave called");
-    // if (isPending) return;
+    if (isPending) return;
 
-    // const nextErrors = validate();
-    // if (Object.keys(nextErrors).length > 0) return;
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
       id_studio_local: user?.id_studio_local,

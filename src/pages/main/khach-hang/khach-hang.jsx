@@ -117,6 +117,7 @@ const KhachHang = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [totalItems, setTotalItems] = useState(0); // tổng số bản ghi, để phân trang chuẩn
 
   useEffect(() => {
     const handleEdit = (e) => {
@@ -147,19 +148,25 @@ const KhachHang = () => {
       try {
         const res = await DanhSachKhachHang(
           {
-            id_studio_local: apiHelper.getIdStudioLocal?.(), // lấy id studio hiện tại theo cách app đang dùng
+            id_studio_local: apiHelper.getIdStudioLocal?.(),
             tim_kiem: searchValue ?? "",
             trang: pageIndex + 1,
             so_luong: pageSize,
           },
           controller.signal,
         );
-        const list = apiHelper.extractList(res);
+
+        // API trả về dạng { du_lieu: [...], phan_trang: { trang, so_luong, tong_so, tong_trang } }
+        const list = res?.data?.du_lieu ?? [];
+        const phanTrang = res?.data?.phan_trang ?? {};
+
         setData(list);
+        setTotalItems(phanTrang.tong_so ?? list.length);
       } catch (err) {
         if (err?.code !== "ERR_CANCELED") {
           setError(err?.response?.data?.message || "Không tải được dữ liệu");
           setData([]);
+          setTotalItems(0);
         }
       } finally {
         setLoading(false);
@@ -170,7 +177,6 @@ const KhachHang = () => {
 
     return () => controller.abort();
   }, [searchValue, reloadKey, pageIndex, pageSize]);
-
   const emptyText = loading
     ? "Đang tải dữ liệu..."
     : error || "Không có dữ liệu";
