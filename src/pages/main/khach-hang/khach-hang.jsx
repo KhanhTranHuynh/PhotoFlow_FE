@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { DanhSachKhachHang } from "@/store/api/khach-hang";
 import SearchTable from "@/views/component/SearchTable";
 import TempTable from "@/views/component/TempTable";
 import Card from "@/views/component/Card";
 import Button from "@/components/ui/Button";
 import apiHelper from "@/helpers/apiHelper";
-import usePermission from "@/hooks/usePermission";
 import AddKhachHangModal from "../../../views/khach-hang/khach-hang/add";
 import EditKhachHangModal from "../../../views/khach-hang/khach-hang/edit";
 import DeleteKhachHangModal from "../../../views/khach-hang/khach-hang/delete";
@@ -145,38 +144,50 @@ const KhachHang = () => {
     const fetch = async () => {
       setLoading(true);
       setError("");
-      try {
-        const res = await DanhSachKhachHang(
-          {
-            id_studio_local: apiHelper.getIdStudioLocal?.(),
-            tim_kiem: searchValue ?? "",
-            trang: pageIndex + 1,
-            so_luong: pageSize,
-          },
-          controller.signal,
-        );
 
-        // API trả về dạng { du_lieu: [...], phan_trang: { trang, so_luong, tong_so, tong_trang } }
-        const list = res?.data?.du_lieu ?? [];
-        const phanTrang = res?.data?.phan_trang ?? {};
+      // DanhSachKhachHang giờ KHÔNG throw — luôn trả về envelope
+      // PhanHoiChuan { data, message, code, ... }. Phân biệt thành
+      // công/lỗi bằng "code" (code>=1: OK, code<0: lỗi), không còn
+      // dùng try/catch để bắt lỗi HTTP như trước.
+      const res = await DanhSachKhachHang(
+        {
+          id_studio_local: apiHelper.getIdStudioLocal?.(),
+          tim_kiem: searchValue ?? "",
+          trang: pageIndex + 1,
+          so_luong: pageSize,
+        },
+        controller.signal,
+      );
 
-        setData(list);
-        setTotalItems(phanTrang.tong_so ?? list.length);
-      } catch (err) {
-        if (err?.code !== "ERR_CANCELED") {
-          setError(err?.response?.data?.message || "Không tải được dữ liệu");
-          setData([]);
-          setTotalItems(0);
-        }
-      } finally {
+      // Request bị huỷ do đổi filter/unmount trong lúc đang chạy -> bỏ
+      // qua, không hiển thị lỗi (giữ đúng hành vi cũ khi dùng AbortController).
+      if (res.__networkError && controller.signal.aborted) {
         setLoading(false);
+        return;
       }
+
+      if (res.code < 0) {
+        setError(res.message || "Không tải được dữ liệu");
+        setData([]);
+        setTotalItems(0);
+        setLoading(false);
+        return;
+      }
+
+      // API trả về dạng { du_lieu: [...], phan_trang: { trang, so_luong, tong_so, tong_trang } }
+      const list = res?.data?.du_lieu ?? [];
+      const phanTrang = res?.data?.phan_trang ?? {};
+
+      setData(list);
+      setTotalItems(phanTrang.tong_so ?? list.length);
+      setLoading(false);
     };
 
     fetch();
 
     return () => controller.abort();
   }, [searchValue, reloadKey, pageIndex, pageSize]);
+
   const emptyText = loading
     ? "Đang tải dữ liệu..."
     : error || "Không có dữ liệu";

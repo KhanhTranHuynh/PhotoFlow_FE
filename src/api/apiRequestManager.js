@@ -26,9 +26,16 @@ function buildApiTag(method, apiUrl) {
  *  - Ghi log toàn bộ vòng đời batch/request qua `logger` (helpers/logger).
  *
  * Không tự tạo axios instance riêng. Toàn bộ request đi qua `http` (http.js)
- * để không mất cơ chế gắn token / refresh token / redirect login khi 401-403.
- * Nhờ vậy interceptor chỉ đăng ký một lần duy nhất ở http.js, tránh tích lũy
+ * để không mất cơ chế gắn token / refresh token / redirect login khi lỗi
+ * xác thực (dựa trên "code" của PhanHoiChuan, xem http.js). Nhờ vậy
+ * interceptor chỉ đăng ký một lần duy nhất ở http.js, tránh tích lũy
  * interceptor theo thời gian.
+ *
+ * Lưu ý về hình dạng dữ liệu: `data` trả về trong mỗi kết quả (results[i].data)
+ * là NGUYÊN response.data từ BE, tức nguyên envelope PhanHoiChuan
+ * { data, message, messageSystem, code, status, token, rToken }.
+ * ApiRequestManager KHÔNG unwrap xuống .data.data — việc đọc field nào
+ * trong envelope là trách nhiệm của tầng gọi (callApi/callApis).
  */
 export class ApiRequestManager {
   static config = {
@@ -414,7 +421,7 @@ export class ApiRequestManager {
 
       logger.info?.(`${LOG_TAG} ${apiTag} executeRequest() success`, {
         key,
-        statusCode: response.status,
+        code: response.data?.code,
         durationMs,
       });
 
@@ -432,7 +439,12 @@ export class ApiRequestManager {
         apiUrl: request.apiUrl,
         method,
         status: "success",
-        statusCode: response.status,
+        // statusCode ở đây là "code" nghiệp vụ của BE (PhanHoiChuan.code),
+        // không phải HTTP status (BE luôn trả 200).
+        statusCode: response.data?.code,
+        // Trả NGUYÊN envelope PhanHoiChuan { data, message, code, ... },
+        // không unwrap xuống .data.data. Tầng callApi/callApis chịu trách
+        // nhiệm đọc field cụ thể.
         data: response.data,
       };
     } catch (error) {
@@ -508,13 +520,24 @@ export class ApiRequestManager {
     }
   }
 
+  /**
+   * Chuẩn hoá lỗi từ axios.
+   * - Nếu error là lỗi nghiệp vụ do http.js tự tạo (isBusinessError: true,
+   *   xem makeBusinessError trong http.js/handleAuthCode) thì error.response.data
+   *   ĐÃ LÀ envelope PhanHoiChuan chuẩn { code, message, data... }.
+   * - Nếu là lỗi HTTP thật (500, network, timeout) thì error.response.data
+   *   có thể không tồn tại hoặc không đúng hình dạng PhanHoiChuan.
+   */
   static normalizeError(error) {
     if (error?.isAxiosError) {
+      const body = error.response?.data;
       return {
-        message: error.message || "Axios request failed.",
-        statusCode: error.response?.status,
-        code: error.code,
-        responseData: error.response?.data,
+        message: body?.message || error.message || "Yêu cầu thất bại.",
+        messageSystem: body?.messageSystem ?? null,
+        statusCode:
+          typeof body?.code === "number" ? body.code : error.response?.status,
+        httpStatus: error.response?.status,
+        responseData: body,
         isCanceled: error.code === "ERR_CANCELED",
       };
     }

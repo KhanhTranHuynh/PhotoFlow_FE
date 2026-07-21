@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import { TaoKhachHangMoi } from "@/store/api/khach-hang";
 import { DanhSachDanhMucKhachHang } from "@/store/api/danh-muc-khach-hang";
@@ -61,28 +61,36 @@ const AddKhachHangModal = ({
     const controller = new AbortController();
 
     const fetchCategories = async () => {
-      try {
-        fetchedCategoriesRef.current = true;
-        setLoadingCategories(true);
-        const res = await DanhSachDanhMucKhachHang(
-          {
-            trang: 1,
-            so_luong: 100,
-            dang_hoat_dong: true,
-            id_studio_local: user?.id_studio_local,
-          },
-          controller.signal,
-        );
-        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
-        const items = res?.data?.du_lieu;
-        setCategoryData(Array.isArray(items) ? items : []);
-      } catch (err) {
-        if (err?.code !== "ERR_CANCELED") {
-          setCategoryData([]);
-        }
-      } finally {
+      fetchedCategoriesRef.current = true;
+      setLoadingCategories(true);
+
+      // DanhSachDanhMucKhachHang không throw nữa — luôn trả envelope
+      // PhanHoiChuan, phân biệt lỗi bằng "code" thay vì try/catch.
+      const res = await DanhSachDanhMucKhachHang(
+        {
+          trang: 1,
+          so_luong: 100,
+          dang_hoat_dong: true,
+          id_studio_local: user?.id_studio_local,
+        },
+        controller.signal,
+      );
+
+      if (res.__networkError && controller.signal.aborted) {
         setLoadingCategories(false);
+        return;
       }
+
+      if (res.code < 0) {
+        setCategoryData([]);
+        setLoadingCategories(false);
+        return;
+      }
+
+      // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
+      const items = res?.data?.du_lieu;
+      setCategoryData(Array.isArray(items) ? items : []);
+      setLoadingCategories(false);
     };
 
     fetchCategories();
@@ -142,6 +150,9 @@ const AddKhachHangModal = ({
     return nextErrors;
   };
 
+  // TaoKhachHangMoi không throw — luôn resolve với envelope PhanHoiChuan.
+  // notifyApiByCode tự đọc res.code để quyết định gọi onSuccess hay hiện
+  // lỗi, nên useMutation chỉ cần mutationFn trả thẳng envelope.
   const { mutate, isPending } = useMutation({
     mutationFn: (payload) => TaoKhachHangMoi(payload),
 
@@ -153,7 +164,7 @@ const AddKhachHangModal = ({
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["khachhang"] });
 
-          const created = res?.data?.item || res?.data || res?.item || null;
+          const created = res?.data?.item || res?.data || null;
 
           onCreated?.(created || variables);
           onClose?.();
@@ -161,14 +172,16 @@ const AddKhachHangModal = ({
       });
     },
 
+    // Vì mutationFn không còn throw, nhánh này chỉ còn bắt lỗi thật sự
+    // ngoài dự kiến (bug trong code xử lý, không phải lỗi API).
     onError: (err) => {
-      const msg = err?.response?.data?.message || "Thêm khách hàng thất bại";
-      toast.error(msg, { position: "top-right" });
+      toast.error(err?.message || "Thêm khách hàng thất bại", {
+        position: "top-right",
+      });
     },
   });
 
   const handleSave = () => {
-    console.log("handleSave called");
     if (isPending) return;
 
     const nextErrors = validate();

@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { DanhSachNhanVien } from "@/store/api/nhan-vien";
-import { DanhSachVaiTro } from "@/store/api/vai-tro";
+import { callApis } from "@/api/callApi";
+import { NhanVienApi } from "@/api/descriptors/nhanVien";
+import { VaiTroApi } from "@/api/descriptors/vaiTro";
 import SearchTable from "@/views/component/SearchTable";
 import FilterTable from "@/views/component/FilterTable";
 import TempTable from "@/views/component/TempTable";
 import Card from "@/views/component/Card";
 import Button from "@/components/ui/Button";
 import apiHelper from "@/helpers/apiHelper";
-import usePermission from "@/hooks/usePermission";
 import AddNhanVienModal from "../../../views/nhan-vien/add";
 import EditNhanVienModal from "../../../views/nhan-vien/edit";
 import DeleteNhanVienModal from "../../../views/nhan-vien/delete";
@@ -179,9 +179,11 @@ const NhanVien = () => {
     return () => window.removeEventListener("deleteNhanVien", handleDelete);
   }, []);
 
-  // Chạy song song 2 API: DanhSachNhanVien (bảng chính) + DanhSachVaiTro (options filter).
-  // Cả 2 cùng dùng chung AbortController nên khi effect bị huỷ (unmount / deps đổi)
-  // thì cả 2 request đang chạy đều được abort.
+  // Chạy song song 2 API: NhanVienApi.danhSach (bảng chính) +
+  // VaiTroApi.danhSach (options filter), thông qua callApis — đi CHUNG
+  // 1 batch của ApiRequestManager (parallel:true), không còn tự tạo 2
+  // promise rồi tự Promise.allSettled ở component nữa. Muốn đổi 2 API
+  // này sang chạy tuần tự thì chỉ cần đổi { parallel: false } bên dưới.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -190,57 +192,50 @@ const NhanVien = () => {
       setError("");
       setVaiTroLoading(true);
 
-      const nhanVienPromise = DanhSachNhanVien(
-        {
-          id_studio_local: apiHelper.getIdStudioLocal?.(),
-          tim_kiem: searchValue ?? "",
-          trang: pageIndex + 1,
-          so_luong: pageSize,
-          vai_tro_id: filterValues.vai_tro_id ?? undefined,
-          dang_hoat_dong: filterValues.dang_hoat_dong ?? undefined,
-        },
-        controller.signal,
+      const [nhanVienRes, vaiTroRes] = await callApis(
+        [
+          NhanVienApi.danhSach(
+            {
+              id_studio_local: apiHelper.getIdStudioLocal?.(),
+              tim_kiem: searchValue ?? "",
+              trang: pageIndex + 1,
+              so_luong: pageSize,
+              vai_tro_id: filterValues.vai_tro_id ?? undefined,
+              dang_hoat_dong: filterValues.dang_hoat_dong ?? undefined,
+            },
+            controller.signal,
+          ),
+          VaiTroApi.danhSach(
+            { trang: 1, so_luong: 100, dang_hoat_dong: true },
+            controller.signal,
+          ),
+        ],
+        { parallel: true, showOverlay: true },
       );
-
-      const vaiTroPromise = DanhSachVaiTro(
-        {
-          trang: 1,
-          so_luong: 100,
-          dang_hoat_dong: true,
-        },
-        controller.signal,
-      );
-
-      // Promise.all -> 2 request bắn đi cùng lúc, không chờ nhau.
-      const [nhanVienResult, vaiTroResult] = await Promise.allSettled([
-        nhanVienPromise,
-        vaiTroPromise,
-      ]);
 
       // --- Xử lý kết quả danh sách nhân viên ---
-      if (nhanVienResult.status === "fulfilled") {
-        const res = nhanVienResult.value;
-        // API trả về dạng { du_lieu: [...], phan_trang: { trang, so_luong, tong_so, tong_trang } }
-        const list = res?.data?.du_lieu ?? [];
-        const phanTrang = res?.data?.phan_trang ?? {};
+      if (nhanVienRes.__networkError && controller.signal.aborted) {
+        // effect bị huỷ (đổi filter/unmount) -> bỏ qua, không set lỗi
+      } else if (nhanVienRes.code < 0) {
+        setError(nhanVienRes.message || "Không tải được dữ liệu");
+        setData([]);
+        setTotalItems(0);
+      } else {
+        // API trả về dạng { du_lieu: [...], phan_trang: {...} }
+        const list = nhanVienRes?.data?.du_lieu ?? [];
+        const phanTrang = nhanVienRes?.data?.phan_trang ?? {};
         setData(list);
         setTotalItems(phanTrang.tong_so ?? list.length);
-      } else {
-        const err = nhanVienResult.reason;
-        if (err?.code !== "ERR_CANCELED") {
-          setError(err?.response?.data?.message || "Không tải được dữ liệu");
-          setData([]);
-          setTotalItems(0);
-        }
       }
 
       // --- Xử lý kết quả danh sách vai trò (options cho filter) ---
-      if (vaiTroResult.status === "fulfilled") {
-        const list =
-          vaiTroResult.value?.data?.du_lieu ?? vaiTroResult.value ?? [];
-        setVaiTroOptions(Array.isArray(list) ? list : []);
-      } else if (vaiTroResult.reason?.code !== "ERR_CANCELED") {
+      if (vaiTroRes.__networkError && controller.signal.aborted) {
+        // bỏ qua khi bị huỷ
+      } else if (vaiTroRes.code < 0) {
         setVaiTroOptions([]);
+      } else {
+        const list = vaiTroRes?.data?.du_lieu ?? [];
+        setVaiTroOptions(Array.isArray(list) ? list : []);
       }
 
       setLoading(false);

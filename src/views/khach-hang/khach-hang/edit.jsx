@@ -68,27 +68,35 @@ const EditKhachHangModal = ({
     const controller = new AbortController();
 
     const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const res = await DanhSachDanhMucKhachHang(
-          {
-            trang: 1,
-            so_luong: 100,
-            dang_hoat_dong: true,
-            id_studio_local: user?.id_studio_local,
-          },
-          controller.signal,
-        );
-        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
-        const items = res?.data?.du_lieu;
-        setCategoryData(Array.isArray(items) ? items : []);
-      } catch (err) {
-        if (err?.code !== "ERR_CANCELED") {
-          setCategoryData([]);
-        }
-      } finally {
+      setLoadingCategories(true);
+
+      // DanhSachDanhMucKhachHang không throw — luôn trả envelope
+      // PhanHoiChuan, đọc "code" thay vì try/catch.
+      const res = await DanhSachDanhMucKhachHang(
+        {
+          trang: 1,
+          so_luong: 100,
+          dang_hoat_dong: true,
+          id_studio_local: user?.id_studio_local,
+        },
+        controller.signal,
+      );
+
+      if (res.__networkError && controller.signal.aborted) {
         setLoadingCategories(false);
+        return;
       }
+
+      if (res.code < 0) {
+        setCategoryData([]);
+        setLoadingCategories(false);
+        return;
+      }
+
+      // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
+      const items = res?.data?.du_lieu;
+      setCategoryData(Array.isArray(items) ? items : []);
+      setLoadingCategories(false);
     };
 
     fetchCategories();
@@ -135,6 +143,7 @@ const EditKhachHangModal = ({
     return nextErrors;
   };
 
+  // CapNhatKhachHang không throw — luôn resolve envelope PhanHoiChuan.
   const { mutate, isPending } = useMutation({
     mutationFn: (payload) => CapNhatKhachHang(payload),
 
@@ -146,7 +155,7 @@ const EditKhachHangModal = ({
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["khachhang"] });
 
-          const updated = res?.data?.item || res?.data || res?.item || null;
+          const updated = res?.data?.item || res?.data || null;
 
           onUpdated?.(updated || variables);
           onClose?.();
@@ -155,17 +164,17 @@ const EditKhachHangModal = ({
     },
 
     onError: (err) => {
-      const msg =
-        err?.response?.data?.message || "Cập nhật khách hàng thất bại";
-      toast.error(msg, { position: "top-right" });
+      toast.error(err?.message || "Cập nhật khách hàng thất bại", {
+        position: "top-right",
+      });
     },
   });
 
   const handleSave = () => {
-    // if (isPending) return;
+    if (isPending) return;
 
-    // const nextErrors = validate();
-    // if (Object.keys(nextErrors).length > 0) return;
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
       id_tai_khoan_khach_hang: form.id_tai_khoan_khach_hang,
