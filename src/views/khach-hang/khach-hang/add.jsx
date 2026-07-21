@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import Modal from "@/views/component/Modal";
 import Button from "@/components/ui/Button";
@@ -41,23 +41,27 @@ const AddKhachHangModal = ({
   const [categoryData, setCategoryData] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
+  const fetchedCategoriesRef = useRef(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (activeModal) {
       setForm(INITIAL_FORM);
       setErrors({});
+      fetchedCategoriesRef.current = false; // reset mỗi khi mở modal
     }
   }, [activeModal]);
 
   useEffect(() => {
     if (!activeModal) return;
     if (categoryOptions && categoryOptions.length) return;
+    if (fetchedCategoriesRef.current) return; // chặn gọi lặp
 
     const controller = new AbortController();
 
     const fetchCategories = async () => {
       try {
+        fetchedCategoriesRef.current = true;
         setLoadingCategories(true);
         const res = await DanhSachDanhMucKhachHang(
           {
@@ -82,7 +86,8 @@ const AddKhachHangModal = ({
     fetchCategories();
 
     return () => controller.abort();
-  }, [activeModal, categoryOptions, idStudioLocal]);
+    // dùng .length thay vì cả mảng categoryOptions để tránh đổi reference mỗi render
+  }, [activeModal, categoryOptions.length, idStudioLocal]);
 
   const categorySelectOptions = useMemo(() => {
     const src =
