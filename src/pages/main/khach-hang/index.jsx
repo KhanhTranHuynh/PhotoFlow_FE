@@ -5,6 +5,11 @@ import KhachHangListPage from "./khach-hang";
 const KhachHangPage = () => {
   const tabItems = [
     {
+      title: "Danh Mục Khách Hàng",
+      icon: "heroicons-outline:users",
+      content: <KhachHangListPage />,
+    },
+    {
       title: "Khách hàng",
       icon: "heroicons-outline:user",
       content: <KhachHangListPage />,
