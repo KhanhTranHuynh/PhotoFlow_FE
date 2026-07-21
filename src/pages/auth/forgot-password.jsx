@@ -11,7 +11,7 @@ import {
   quenMatKhauGuiEmail,
   OTPMatKhau, // TODO: sửa lại đúng tên hàm gọi API xác nhận OTP nếu khác
 } from "@/store/api/xac-thuc";
-import { notifyApiByErrorCode } from "@/utils/api-toast"; // TODO: sửa lại đúng đường dẫn file chứa notifyApiByErrorCode
+import { notifyApiByCode } from "@/utils/api-toast"; // TODO: sửa lại đúng đường dẫn file chứa notifyApiByCode
 
 const MailIcon = () => (
   <svg
@@ -106,7 +106,7 @@ const ForgotPassword = () => {
 
       const res = await quenMatKhauGuiEmail(payload);
 
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Mã OTP đã được gửi đến email của bạn.",
         errorMessage: "Gửi yêu cầu thất bại, vui lòng thử lại",
         onSuccess: () => {
@@ -116,7 +116,7 @@ const ForgotPassword = () => {
         },
       });
     } catch (err) {
-      notifyApiByErrorCode(err?.response?.data ?? err, {
+      notifyApiByCode(err?.response?.data ?? err, {
         errorMessage: "Đã có lỗi xảy ra, vui lòng thử lại",
       });
     } finally {
@@ -182,7 +182,7 @@ const ForgotPassword = () => {
         otp: code,
       });
 
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Xác thực OTP thành công.",
         errorMessage: "Mã OTP không đúng hoặc đã hết hạn",
         onSuccess: () => {
@@ -191,7 +191,7 @@ const ForgotPassword = () => {
         },
       });
     } catch (err) {
-      notifyApiByErrorCode(err?.response?.data ?? err, {
+      notifyApiByCode(err?.response?.data ?? err, {
         errorMessage: "Đã có lỗi xảy ra, vui lòng thử lại",
       });
     } finally {
@@ -203,12 +203,12 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
       const res = await quenMatKhauGuiEmail({ email: email.trim() });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Đã gửi lại mã OTP.",
         errorMessage: "Gửi lại mã thất bại, vui lòng thử lại",
       });
     } catch (err) {
-      notifyApiByErrorCode(err?.response?.data ?? err, {
+      notifyApiByCode(err?.response?.data ?? err, {
         errorMessage: "Đã có lỗi xảy ra, vui lòng thử lại",
       });
     } finally {

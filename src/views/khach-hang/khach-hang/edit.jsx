@@ -5,12 +5,12 @@ import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
+import { useSelector } from "react-redux";
 
 import { CapNhatKhachHang } from "@/store/api/khach-hang";
 import { DanhSachDanhMucKhachHang } from "@/store/api/khach-hang";
-import apiHelper from "@/helpers/apiHelper";
 
-import { notifyApiByErrorCode } from "@/utils/api-toast";
+import { notifyApiByCode } from "@/utils/api-toast";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -18,7 +18,7 @@ const PHONE_REGEX = /^0\d{9}$/;
 
 const INITIAL_FORM = {
   id: "",
-  ten: "",
+  ho_ten: "",
   so_dien_thoai: "",
   dia_chi: "",
   ghi_chu: "",
@@ -29,7 +29,7 @@ const INITIAL_FORM = {
 
 const buildFormFromItem = (item) => ({
   id: item?.id || "",
-  ten: item?.ten || "",
+  ho_ten: item?.ten || item?.ho_ten || "",
   so_dien_thoai: item?.so_dien_thoai || "",
   dia_chi: item?.dia_chi || "",
   ghi_chu: item?.ghi_chu || "",
@@ -42,19 +42,17 @@ const EditKhachHangModal = ({
   activeModal,
   onClose,
   selectedItem,
-  idStudioLocal,
   categoryOptions = [],
   onUpdated,
 }) => {
+  const user = useSelector((state) => state.auth.user);
+
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [categoryData, setCategoryData] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
   const queryClient = useQueryClient();
-
-  // Nếu component cha không truyền idStudioLocal, fallback lấy theo cách app đang dùng
-  const resolvedIdStudioLocal = idStudioLocal || apiHelper.getIdStudioLocal?.();
 
   useEffect(() => {
     if (activeModal) {
@@ -77,11 +75,12 @@ const EditKhachHangModal = ({
             trang: 1,
             so_luong: 100,
             dang_hoat_dong: true,
-            id_studio_local: resolvedIdStudioLocal,
+            id_studio_local: user?.id_studio_local,
           },
           controller.signal,
         );
-        const items = apiHelper.extractList(res);
+        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
+        const items = res?.data?.du_lieu;
         setCategoryData(Array.isArray(items) ? items : []);
       } catch (err) {
         if (err?.code !== "ERR_CANCELED") {
@@ -95,7 +94,7 @@ const EditKhachHangModal = ({
     fetchCategories();
 
     return () => controller.abort();
-  }, [activeModal, categoryOptions, resolvedIdStudioLocal]);
+  }, [activeModal, categoryOptions.length, user?.id_studio_local]);
 
   const categorySelectOptions = useMemo(() => {
     const src =
@@ -104,8 +103,8 @@ const EditKhachHangModal = ({
         : categoryData;
 
     return src.map((item) => ({
-      label: item?.name || item?.code || "",
-      value: item?.id || item?.code || "",
+      label: item?.ten_hien_thi || item?.ma_danh_muc || "",
+      value: item?.id_danh_muc_khach_hang || item?.ma_danh_muc || "",
     }));
   }, [categoryOptions, categoryData]);
 
@@ -121,8 +120,8 @@ const EditKhachHangModal = ({
       nextErrors.id = "Thiếu id khách hàng";
     }
 
-    if (!form.ten.trim()) {
-      nextErrors.ten = "Vui lòng nhập họ tên";
+    if (!form.ho_ten.trim()) {
+      nextErrors.ho_ten = "Vui lòng nhập họ tên";
     }
 
     if (
@@ -140,7 +139,7 @@ const EditKhachHangModal = ({
     mutationFn: (payload) => CapNhatKhachHang(payload),
 
     onSuccess: (res, variables) => {
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Cập nhật khách hàng thành công",
         errorMessage: "Cập nhật khách hàng thất bại",
 
@@ -170,7 +169,7 @@ const EditKhachHangModal = ({
 
     const payload = {
       id: form.id,
-      ten: form.ten.trim(),
+      ho_ten: form.ho_ten.trim(),
       ...(form.so_dien_thoai.trim() && {
         so_dien_thoai: form.so_dien_thoai.trim(),
       }),
@@ -219,9 +218,9 @@ const EditKhachHangModal = ({
             required
             label="Họ tên"
             placeholder="Nhập họ tên khách hàng"
-            value={form.ten}
-            onChange={(e) => setField("ten", e.target.value)}
-            error={errors.ten ? { message: errors.ten } : null}
+            value={form.ho_ten}
+            onChange={(e) => setField("ho_ten", e.target.value)}
+            error={errors.ho_ten ? { message: errors.ho_ten } : null}
           />
 
           <Textinput

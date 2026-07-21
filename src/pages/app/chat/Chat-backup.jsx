@@ -25,7 +25,7 @@ import {
   DonHangExportPdf,
   DonHangExportPdfSmall,
 } from "@/store/api/don-hang";
-import { notifyApiByErrorCode } from "@/utils/api-toast";
+import { notifyApiByCode } from "@/utils/api-toast";
 import { getTodayStr } from "@/helpers/dateHelper";
 import convert from "@/helpers/convert";
 import ThaoTac from "./ThaoTac";
@@ -165,12 +165,12 @@ const Chat = ({
     note = "",
   } = {}) => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
     if (!statusCode)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu trạng thái",
       });
@@ -180,7 +180,7 @@ const Chat = ({
         status_code: statusCode,
         note,
       });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Đổi trạng thái thành công",
         errorMessage: "Đổi trạng thái thất bại",
       });
@@ -191,7 +191,7 @@ const Chat = ({
 
   const handleSubmitDonHangDoneOrder = async ({ note = "" }) => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
@@ -200,7 +200,7 @@ const Chat = ({
         id: String(orderId),
         note: note || "Hoàn thành đơn hàng",
       });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Hoàn thành đơn hàng",
         errorMessage: "Hoàn thành thất bại",
       });
@@ -211,7 +211,7 @@ const Chat = ({
 
   const handleSubmitDonHangDeleteOrder = async ({ note = "" }) => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
@@ -220,7 +220,7 @@ const Chat = ({
         id: String(orderId),
         note: note || "Xóa đơn hàng",
       });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Xóa đơn hàng thành công",
         errorMessage: "Xoa don hang that bai",
       });
@@ -232,13 +232,13 @@ const Chat = ({
 
   const handleSubmitDonHangDeleteDraft = async () => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
     try {
       const res = await DonHangDeleteDraft({ id: String(orderId) });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Xóa bản nháp thành công",
         errorMessage: "Xóa bản nháp thất bại",
       });
@@ -250,14 +250,14 @@ const Chat = ({
 
   const handleSubmitDonHangExportPdf = async () => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
     try {
       const res = await DonHangExportPdf({ id: String(orderId) });
       if (res.errorCode < 1 || !res.data) {
-        return notifyApiByErrorCode(res, {
+        return notifyApiByCode(res, {
           successMessage: "Xuất PDF thành công",
           errorMessage: "Xuất PDF thất bại",
         });
@@ -265,20 +265,20 @@ const Chat = ({
       openPdfModal(res.data, `HDKH_${orderCode}_${getTodayStr()}.pdf`);
     } catch (err) {
       console.error("DonHangExportPdf error:", err);
-      notifyApiByErrorCode({ errorCode: -1, message: "Xuất PDF thất bại" });
+      notifyApiByCode({ errorCode: -1, message: "Xuất PDF thất bại" });
     }
   };
 
   const handleSubmitDonHangExportPdfSmall = async () => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
     try {
       const res = await DonHangExportPdfSmall({ id: String(orderId) });
       if (res.errorCode < 1 || !res.data) {
-        return notifyApiByErrorCode(res, {
+        return notifyApiByCode(res, {
           successMessage: "Xuất PDF thành công",
           errorMessage: "Xuất PDF thất bại",
         });
@@ -286,7 +286,7 @@ const Chat = ({
       openPdfModal(res.data, `HDSX_${orderCode}_${getTodayStr()}.pdf`);
     } catch (err) {
       console.error("DonHangExportPdfSmall error:", err);
-      notifyApiByErrorCode({ errorCode: -1, message: "Xuất PDF thất bại" });
+      notifyApiByCode({ errorCode: -1, message: "Xuất PDF thất bại" });
     }
   };
 
@@ -323,13 +323,13 @@ const Chat = ({
 
   const handleSubmitDonHangCancelOrder = async () => {
     if (!orderId)
-      return notifyApiByErrorCode({
+      return notifyApiByCode({
         errorCode: -1,
         message: "Thiếu id đơn hàng",
       });
     try {
       const res = await DonHangCancelOrder({ id: String(orderId) });
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Hủy đơn hàng thành công",
         errorMessage: "Huy don hang that bai",
       });

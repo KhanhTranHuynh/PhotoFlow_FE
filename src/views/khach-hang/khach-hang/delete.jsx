@@ -4,7 +4,7 @@ import Modal from "@/views/component/Modal";
 import Button from "@/components/ui/Button";
 
 import { XoaKhachHang } from "@/store/api/khach-hang";
-import { notifyApiByErrorCode } from "@/utils/api-toast";
+import { notifyApiByCode } from "@/utils/api-toast";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -20,7 +20,7 @@ const DeleteKhachHangModal = ({
     mutationFn: (payload) => XoaKhachHang(payload),
 
     onSuccess: (res) => {
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Xóa khách hàng thành công",
         errorMessage: "Xóa khách hàng thất bại",
 

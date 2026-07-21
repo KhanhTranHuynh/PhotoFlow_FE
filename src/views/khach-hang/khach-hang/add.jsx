@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { TaoKhachHangMoi } from "@/store/api/khach-hang";
 import { DanhSachDanhMucKhachHang } from "@/store/api/khach-hang";
 
-import { notifyApiByErrorCode } from "@/utils/api-toast";
+import { notifyApiByCode } from "@/utils/api-toast";
 
 // react-query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -146,7 +146,7 @@ const AddKhachHangModal = ({
     mutationFn: (payload) => TaoKhachHangMoi(payload),
 
     onSuccess: (res, variables) => {
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Thêm khách hàng thành công",
         errorMessage: "Thêm khách hàng thất bại",
 

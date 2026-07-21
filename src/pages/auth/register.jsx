@@ -8,7 +8,7 @@ import Logo from "@/assets/images/logo/logo.svg";
 import bgImage1 from "@/assets/images/all-img/login-bg-1.png";
 import bgImage2 from "@/assets/images/all-img/login-bg-2.png";
 import { dangKyStudio } from "@/store/api/xac-thuc";
-import { notifyApiByErrorCode } from "@/utils/api-toast"; // TODO: sửa lại đúng đường dẫn file chứa notifyApiByErrorCode
+import { notifyApiByCode } from "@/utils/api-toast"; // TODO: sửa lại đúng đường dẫn file chứa notifyApiByCode
 
 const AlbumIcon = () => (
   <svg
@@ -182,13 +182,13 @@ const register2 = () => {
 
       const res = await dangKyStudio(payload);
 
-      notifyApiByErrorCode(res, {
+      notifyApiByCode(res, {
         successMessage: "Đăng ký thành công! Vui lòng đăng nhập.",
         errorMessage: "Đăng ký thất bại, vui lòng thử lại",
         onSuccess: () => navigate("/login"),
       });
     } catch (err) {
-      notifyApiByErrorCode(err?.response?.data ?? err, {
+      notifyApiByCode(err?.response?.data ?? err, {
         errorMessage: "Đã có lỗi xảy ra, vui lòng thử lại",
       });
     } finally {

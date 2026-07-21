@@ -12,7 +12,7 @@ export const getApiResultMeta = (response) => {
   return { code, message };
 };
 
-export const notifyApiByErrorCode = (response, options = {}) => {
+export const notifyApiByCode = (response, options = {}) => {
   const {
     successMessage = "Thành công",
     errorMessage = "Thất bại",
