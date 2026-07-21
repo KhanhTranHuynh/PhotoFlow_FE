@@ -79,7 +79,7 @@ export const CapNhatKhachHang = async (payload = {}, signal) => {
       {
         key: "khachHangCapNhat",
         apiUrl: "/khach-hang/cap-nhat",
-        method: "PUT",
+        method: "POST",
         data: payload,
         signal,
       },

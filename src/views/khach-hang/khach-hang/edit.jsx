@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 const PHONE_REGEX = /^0\d{9}$/;
 
 const INITIAL_FORM = {
-  id: "",
+  id_tai_khoan_khach_hang: "",
   ho_ten: "",
   so_dien_thoai: "",
   dia_chi: "",
@@ -28,7 +28,7 @@ const INITIAL_FORM = {
 };
 
 const buildFormFromItem = (item) => ({
-  id: item?.id || "",
+  id_tai_khoan_khach_hang: item?.id_tai_khoan_khach_hang || "",
   ho_ten: item?.ten || item?.ho_ten || "",
   so_dien_thoai: item?.so_dien_thoai || "",
   dia_chi: item?.dia_chi || "",
@@ -116,8 +116,8 @@ const EditKhachHangModal = ({
   const validate = () => {
     const nextErrors = {};
 
-    if (!form.id) {
-      nextErrors.id = "Thiếu id khách hàng";
+    if (!form.id_tai_khoan_khach_hang) {
+      nextErrors.id_tai_khoan_khach_hang = "Thiếu id khách hàng";
     }
 
     if (!form.ho_ten.trim()) {
@@ -162,13 +162,13 @@ const EditKhachHangModal = ({
   });
 
   const handleSave = () => {
-    if (isPending) return;
+    // if (isPending) return;
 
-    const nextErrors = validate();
-    if (Object.keys(nextErrors).length > 0) return;
+    // const nextErrors = validate();
+    // if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
-      id: form.id,
+      id_tai_khoan_khach_hang: form.id_tai_khoan_khach_hang,
       ho_ten: form.ho_ten.trim(),
       ...(form.so_dien_thoai.trim() && {
         so_dien_thoai: form.so_dien_thoai.trim(),
