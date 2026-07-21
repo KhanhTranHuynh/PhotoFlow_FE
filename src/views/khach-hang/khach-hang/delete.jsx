@@ -40,10 +40,10 @@ const DeleteKhachHangModal = ({
   });
 
   const handleDelete = () => {
-    if (isPending) return;
-    if (!selectedItem?.id) return;
+    // if (isPending) return;
+    // if (!selectedItem?.id) return;
 
-    mutate({ id: selectedItem.id });
+    mutate({ id_tai_khoan_khach_hang: selectedItem.id_tai_khoan_khach_hang });
   };
 
   return (
@@ -76,8 +76,8 @@ const DeleteKhachHangModal = ({
       }>
       <p>
         Bạn có chắc chắn muốn xóa khách hàng{" "}
-        <strong>{selectedItem?.ho_ten || "này"}</strong> không? Hành động này
-        không thể hoàn tác.
+        <strong>{selectedItem?.ten || "này"}</strong> không? Hành động này không
+        thể hoàn tác.
       </p>
     </Modal>
   );

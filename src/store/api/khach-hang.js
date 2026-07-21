@@ -114,7 +114,7 @@ export const XoaKhachHang = async (payload = {}, signal) => {
       {
         key: "khachHangXoa",
         apiUrl: "/khach-hang/xoa",
-        method: "DELETE",
+        method: "POST",
         data: payload,
         signal,
       },
