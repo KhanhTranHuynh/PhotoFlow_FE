@@ -1,201 +1,346 @@
-import { useState } from "react";
-import { Mail, ArrowUpRight, MapPin } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { DanhSachNhanVien } from "@/store/api/nhan-vien";
+import { DanhSachVaiTro } from "@/store/api/vai-tro";
+import SearchTable from "@/views/component/SearchTable";
+import FilterTable from "@/views/component/FilterTable";
+import TempTable from "@/views/component/TempTable";
+import Card from "@/views/component/Card";
+import Button from "@/components/ui/Button";
+import apiHelper from "@/helpers/apiHelper";
+import usePermission from "@/hooks/usePermission";
+import AddNhanVienModal from "../../../views/nhan-vien/add";
+import EditNhanVienModal from "../../../views/nhan-vien/edit";
+import DeleteNhanVienModal from "../../../views/nhan-vien/delete";
 
-export default function SimplePage() {
-  const [hovered, setHovered] = useState(null);
+const COLUMNS = [
+  {
+    Header: "STT",
+    accessor: "stt",
+    width: 60,
+    Cell: ({ row }) => {
+      const idx = row?.index;
+      return <span>{typeof idx === "number" ? idx + 1 : "-"}</span>;
+    },
+  },
+  {
+    Header: "Tên khách hàng",
+    accessor: "ten",
+    width: 200,
+    Cell: ({ row }) => (
+      <span>{apiHelper.safeValue(row.original, ["ten"], "--")}</span>
+    ),
+  },
+  {
+    Header: "Số điện thoại",
+    accessor: "so_dien_thoai",
+    width: 150,
+    Cell: ({ row }) => (
+      <span>{apiHelper.safeValue(row.original, ["so_dien_thoai"], "--")}</span>
+    ),
+  },
+  {
+    Header: "Nhóm khách hàng",
+    accessor: "danh_muc_khach_hang_ten",
+    width: 180,
+    Cell: ({ row }) => (
+      <span>
+        {apiHelper.safeValue(row.original, ["danh_muc_khach_hang_ten"], "--")}
+      </span>
+    ),
+  },
+  {
+    Header: "Trạng thái",
+    accessor: "trang_thai",
+    width: 120,
+    Cell: ({ row }) => {
+      const active = apiHelper.safeValue(row.original, ["trang_thai"], false);
+      return (
+        <span className={active ? "text-success-500" : "text-danger-500"}>
+          {active ? "Hoạt động" : "Ngưng hoạt động"}
+        </span>
+      );
+    },
+  },
+  {
+    Header: "Thao tác",
+    accessor: "actions",
+    width: 120,
+    Cell: ({ row }) => {
+      const rowData = row.original;
+      return (
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Button
+            buttonAction
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("editNhanVien", { detail: rowData }),
+              )
+            }>
+            Sửa
+          </Button>
 
-  const work = [
-    {
-      year: "2026",
-      title: "Studio Phù Sa",
-      desc: "Bộ nhận diện thương hiệu cho quán cà phê ven sông.",
+          <Button
+            buttonAction
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("deleteNhanVien", { detail: rowData }),
+              )
+            }>
+            Xóa
+          </Button>
+        </div>
+      );
     },
-    {
-      year: "2025",
-      title: "Chợ Nổi App",
-      desc: "Ứng dụng đặt hàng nông sản trực tiếp từ nhà vườn.",
-    },
-    {
-      year: "2024",
-      title: "Giấy Dó",
-      desc: "Trang landing cho xưởng giấy thủ công truyền thống.",
-    },
-  ];
+  },
+];
+
+// Danh sách filter hiển thị phía trên bảng.
+// options của "vai_tro_id" được nạp động sau khi fetch xong DanhSachVaiTro.
+const STATIC_FILTERS = [
+  {
+    key: "dang_hoat_dong",
+    label: "Trạng thái",
+    type: "select",
+    clearable: true,
+    items: [
+      { title: "Hoạt động", value: true },
+      { title: "Ngưng hoạt động", value: false },
+    ],
+  },
+];
+
+const NhanVien = () => {
+  const NhanVien_view = true;
+
+  const columns = useMemo(
+    () =>
+      NhanVien_view
+        ? COLUMNS
+        : COLUMNS.filter((col) => col.accessor !== "actions"),
+    [NhanVien_view],
+  );
+
+  const [data, setData] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Giá trị filter hiện tại: { vai_tro_id, dang_hoat_dong }
+  const [filterValues, setFilterValues] = useState({});
+  // Danh sách vai trò dùng làm options cho filter "vai_tro_id"
+  const [vaiTroOptions, setVaiTroOptions] = useState([]);
+  const [vaiTroLoading, setVaiTroLoading] = useState(false);
+
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedEditItem, setSelectedEditItem] = useState(null);
+  const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [selectedDeleteItem, setSelectedDeleteItem] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [totalItems, setTotalItems] = useState(0); // tổng số bản ghi, để phân trang chuẩn
+
+  // Ghép filter tĩnh (trạng thái) + filter động (vai trò, options nạp từ API)
+  const filters = useMemo(
+    () => [
+      {
+        key: "vai_tro_id",
+        label: "Vai trò",
+        type: "select",
+        clearable: true,
+        items: vaiTroOptions,
+        itemTitle: "ten",
+        itemValue: "id",
+      },
+      ...STATIC_FILTERS,
+    ],
+    [vaiTroOptions],
+  );
+
+  useEffect(() => {
+    const handleEdit = (e) => {
+      setSelectedEditItem(e?.detail || null);
+      setOpenEditModal(true);
+    };
+
+    window.addEventListener("editNhanVien", handleEdit);
+    return () => window.removeEventListener("editNhanVien", handleEdit);
+  }, []);
+
+  useEffect(() => {
+    const handleDelete = (e) => {
+      setSelectedDeleteItem(e?.detail || null);
+      setOpenDeleteModal(true);
+    };
+
+    window.addEventListener("deleteNhanVien", handleDelete);
+    return () => window.removeEventListener("deleteNhanVien", handleDelete);
+  }, []);
+
+  // Chạy song song 2 API: DanhSachNhanVien (bảng chính) + DanhSachVaiTro (options filter).
+  // Cả 2 cùng dùng chung AbortController nên khi effect bị huỷ (unmount / deps đổi)
+  // thì cả 2 request đang chạy đều được abort.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchAll = async () => {
+      setLoading(true);
+      setError("");
+      setVaiTroLoading(true);
+
+      const nhanVienPromise = DanhSachNhanVien(
+        {
+          id_studio_local: apiHelper.getIdStudioLocal?.(),
+          tim_kiem: searchValue ?? "",
+          trang: pageIndex + 1,
+          so_luong: pageSize,
+          vai_tro_id: filterValues.vai_tro_id ?? undefined,
+          dang_hoat_dong: filterValues.dang_hoat_dong ?? undefined,
+        },
+        controller.signal,
+      );
+
+      const vaiTroPromise = DanhSachVaiTro(
+        {
+          trang: 1,
+          so_luong: 100,
+          dang_hoat_dong: true,
+        },
+        controller.signal,
+      );
+
+      // Promise.all -> 2 request bắn đi cùng lúc, không chờ nhau.
+      const [nhanVienResult, vaiTroResult] = await Promise.allSettled([
+        nhanVienPromise,
+        vaiTroPromise,
+      ]);
+
+      // --- Xử lý kết quả danh sách nhân viên ---
+      if (nhanVienResult.status === "fulfilled") {
+        const res = nhanVienResult.value;
+        // API trả về dạng { du_lieu: [...], phan_trang: { trang, so_luong, tong_so, tong_trang } }
+        const list = res?.data?.du_lieu ?? [];
+        const phanTrang = res?.data?.phan_trang ?? {};
+        setData(list);
+        setTotalItems(phanTrang.tong_so ?? list.length);
+      } else {
+        const err = nhanVienResult.reason;
+        if (err?.code !== "ERR_CANCELED") {
+          setError(err?.response?.data?.message || "Không tải được dữ liệu");
+          setData([]);
+          setTotalItems(0);
+        }
+      }
+
+      // --- Xử lý kết quả danh sách vai trò (options cho filter) ---
+      if (vaiTroResult.status === "fulfilled") {
+        const list = vaiTroResult.value?.du_lieu ?? vaiTroResult.value ?? [];
+        setVaiTroOptions(Array.isArray(list) ? list : []);
+      } else if (vaiTroResult.reason?.code !== "ERR_CANCELED") {
+        setVaiTroOptions([]);
+      }
+
+      setLoading(false);
+      setVaiTroLoading(false);
+    };
+
+    fetchAll();
+
+    return () => controller.abort();
+  }, [searchValue, reloadKey, pageIndex, pageSize, filterValues]);
+
+  const emptyText = loading
+    ? "Đang tải dữ liệu..."
+    : error || "Không có dữ liệu";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#F6F3EE",
-        color: "#2B2621",
-        fontFamily: "'Georgia', 'Times New Roman', serif",
-      }}>
-      <div
-        style={{ maxWidth: 720, margin: "0 auto", padding: "72px 24px 120px" }}>
-        {/* Header */}
-        <header style={{ marginBottom: 88 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 13,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "#8A7F6E",
-              marginBottom: 28,
-              fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            }}>
-            <MapPin size={13} strokeWidth={1.75} />
-            An Giang, Việt Nam
+    <>
+      <h5 className="mb-6">Nhân viên</h5>
+
+      <Card>
+        {/* HEADER */}
+        <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3 mb-4">
+          <div className="w-full xl:w-[550px] xl:flex-shrink-0">
+            <SearchTable
+              className="w-full xl:w-[550px]"
+              placeholder="Tìm kiếm theo tên, số điện thoại..."
+              value={searchValue}
+              onSearch={(value) => {
+                setPageIndex(0);
+                setSearchValue(value);
+              }}
+            />
           </div>
-          <h1
-            style={{
-              fontSize: "clamp(40px, 7vw, 58px)",
-              lineHeight: 1.08,
-              margin: 0,
-              fontWeight: 400,
-              letterSpacing: "-0.01em",
-            }}>
-            Nguyễn Thảo Vy
-          </h1>
-          <p
-            style={{
-              marginTop: 18,
-              fontSize: 19,
-              lineHeight: 1.6,
-              color: "#5C5346",
-              maxWidth: 480,
-            }}>
-            Nhà thiết kế đồ họa, làm việc với các thương hiệu nhỏ ở miền Tây —
-            nơi câu chuyện và chất liệu địa phương luôn đi trước xu hướng.
-          </p>
-        </header>
-
-        {/* Divider with label */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            marginBottom: 40,
-          }}>
-          <span
-            style={{
-              fontSize: 12,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              color: "#8A7F6E",
-              fontFamily: "'Helvetica Neue', Arial, sans-serif",
-              whiteSpace: "nowrap",
-            }}>
-            Dự án gần đây
-          </span>
-          <div style={{ height: 1, background: "#D8D0C2", flex: 1 }} />
+          <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+            {NhanVien_view && (
+              <Button
+                text="Thêm khách hàng"
+                icon="heroicons-outline:plus"
+                className="btn-primary bg-primary-600 btn-sm w-full sm:w-auto"
+                onClick={() => setOpenAddModal(true)}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Work list */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {work.map((item, i) => (
-            <div
-              key={item.title}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                padding: "22px 0",
-                borderBottom:
-                  i < work.length - 1 ? "1px solid #E4DDD0" : "none",
-                cursor: "pointer",
-                transition: "padding-left 0.25s ease",
-                paddingLeft: hovered === i ? 8 : 0,
-              }}>
-              <div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    color: hovered === i ? "#B5502F" : "#2B2621",
-                    transition: "color 0.2s ease",
-                  }}>
-                  {item.title}
-                </div>
-                <div
-                  style={{
-                    fontSize: 15,
-                    color: "#8A7F6E",
-                    marginTop: 4,
-                    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                  }}>
-                  {item.desc}
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontSize: 14,
-                  color: "#8A7F6E",
-                  fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                  flexShrink: 0,
-                  marginLeft: 20,
-                }}>
-                {item.year}
-                <ArrowUpRight
-                  size={15}
-                  strokeWidth={1.75}
-                  style={{
-                    opacity: hovered === i ? 1 : 0,
-                    transform:
-                      hovered === i ? "translate(0,0)" : "translate(-3px,3px)",
-                    transition: "all 0.2s ease",
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+        {/* FILTER */}
+        <div className="mb-4">
+          <FilterTable
+            filters={filters}
+            modelValue={filterValues}
+            onUpdateModelValue={(next) => {
+              setPageIndex(0);
+              setFilterValues(next);
+            }}
+            onClearFilters={() => {
+              setPageIndex(0);
+              setFilterValues({});
+            }}
+          />
         </div>
 
-        {/* Footer / contact */}
-        <div
-          style={{
-            marginTop: 72,
-            paddingTop: 32,
-            borderTop: "1px solid #E4DDD0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 16,
-          }}>
-          <a
-            href="mailto:vy.thao@example.com"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              color: "#2B2621",
-              textDecoration: "none",
-              fontSize: 15,
-              fontFamily: "'Helvetica Neue', Arial, sans-serif",
-              borderBottom: "1px solid #2B2621",
-              paddingBottom: 2,
-            }}>
-            <Mail size={15} strokeWidth={1.75} />
-            vy.thao@example.com
-          </a>
-          <span
-            style={{
-              fontSize: 13,
-              color: "#8A7F6E",
-              fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            }}>
-            © 2026
-          </span>
-        </div>
-      </div>
-    </div>
+        <TempTable
+          columns={columns}
+          data={data}
+          initialPageSize={pageSize}
+          emptyText={
+            vaiTroLoading && loading ? "Đang tải dữ liệu..." : emptyText
+          }
+          onPageChange={(page) => setPageIndex(page)}
+          onPageSizeChange={(size) => {
+            setPageIndex(0);
+            setPageSize(size);
+          }}
+        />
+
+        <AddNhanVienModal
+          activeModal={openAddModal}
+          onClose={() => setOpenAddModal(false)}
+          onCreated={() => setReloadKey((p) => p + 1)}
+        />
+        <EditNhanVienModal
+          activeModal={openEditModal}
+          onClose={() => {
+            setOpenEditModal(false);
+            setSelectedEditItem(null);
+          }}
+          selectedItem={selectedEditItem}
+          onUpdated={() => setReloadKey((p) => p + 1)}
+        />
+        <DeleteNhanVienModal
+          activeModal={openDeleteModal}
+          onClose={() => {
+            setOpenDeleteModal(false);
+            setSelectedDeleteItem(null);
+          }}
+          selectedItem={selectedDeleteItem}
+          onDeleted={() => setReloadKey((p) => p + 1)}
+        />
+      </Card>
+    </>
   );
-}
+};
+
+export default NhanVien;
