@@ -66,7 +66,8 @@ const TempTable = ({
   pageSizeOptions = [10, 20, 50, 100],
   showPagination = true,
   enableSorting = false,
-  paginationMode = "client", // 'client' | 'server'
+  // 'client' | 'server' | undefined (auto-detect)
+  paginationMode,
   page,
   pageSize,
   totalRecords,
@@ -87,7 +88,19 @@ const TempTable = ({
   const memoColumns = useMemo(() => columns, [columns]);
   const memoData = useMemo(() => data, [data]);
 
-  const isServerPagination = paginationMode === "server";
+  // ── Auto-detect server pagination ──
+  // Trước đây bắt buộc phải truyền paginationMode="server" thì mới hoạt
+  // động đúng. Nếu component cha quên truyền (chỉ truyền totalRecords /
+  // pageCount / onPageChange) thì bảng sẽ tự tính phân trang dựa trên
+  // đúng mảng `data` nhận được (thường chỉ là 1 trang do BE trả về),
+  // khiến các nút chuyển trang biến mất dù còn nhiều trang khác.
+  // Vì vậy nếu không truyền paginationMode một cách tường minh, ta suy
+  // luận đây là server pagination khi có totalRecords hoặc pageCount.
+  const isServerPagination =
+    paginationMode === "server" ||
+    (paginationMode !== "client" &&
+      (typeof totalRecords === "number" || typeof pageCount === "number"));
+
   const isServerSort = enableSorting && typeof onSortChange === "function";
 
   const resolvedPageSize =

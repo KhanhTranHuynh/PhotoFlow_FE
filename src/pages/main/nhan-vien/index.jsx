@@ -291,10 +291,15 @@ const NhanVien = () => {
           columns={columns}
           data={data}
           initialPageSize={pageSize}
+          paginationMode="server"
+          page={pageIndex + 1}
+          pageSize={pageSize}
+          totalRecords={totalItems}
+          pageCount={Math.max(1, Math.ceil(totalItems / pageSize))}
           emptyText={
             vaiTroLoading && loading ? "Đang tải dữ liệu..." : emptyText
           }
-          onPageChange={(page) => setPageIndex(page)}
+          onPageChange={(page) => setPageIndex(page - 1)}
           onPageSizeChange={(size) => {
             setPageIndex(0);
             setPageSize(size);
