@@ -459,7 +459,7 @@ const TempTable = ({
               <select
                 value={effectivePageSize}
                 onChange={handlePageSizeChange}
-                className="appearance-none rounded-full border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 pl-4 pr-8 py-1.5 text-sm text-slate-600 outline-none cursor-pointer">
+                className="appearance-none rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 pl-4 pr-8 py-1.5 text-sm text-slate-600 outline-none cursor-pointer">
                 {pageSizeOptions.map((n) => (
                   <option key={n} value={n}>
                     {n}
@@ -473,7 +473,7 @@ const TempTable = ({
             </div>
 
             <span className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
-              Showing {startIdx} - {endIdx} of {totalCount}
+              Hiển thị {startIdx} - {endIdx} trên tổng {totalCount} bản ghi
             </span>
           </div>
 
@@ -484,7 +484,7 @@ const TempTable = ({
                 type="button"
                 onClick={handleFirstPage}
                 disabled={!canPrev}
-                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-200 active:scale-90 ${
                   !canPrev
                     ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
                     : "text-slate-500 border-slate-200 bg-white hover:bg-slate-100 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -500,7 +500,7 @@ const TempTable = ({
                 type="button"
                 onClick={handlePreviousPage}
                 disabled={!canPrev}
-                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-200 active:scale-90 ${
                   !canPrev
                     ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
                     : "text-slate-500 border-slate-200 bg-white hover:bg-slate-100 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -531,7 +531,7 @@ const TempTable = ({
                     type="button"
                     aria-current="page"
                     onClick={() => handleGotoPage(pageIdx)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all duration-200 active:scale-90 ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-200 active:scale-90 ${
                       pageIdx === displayPageIndex
                         ? "bg-primary-600 text-white shadow-sm hover:brightness-110 hover:scale-105"
                         : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 hover:scale-110 dark:hover:bg-slate-700"
@@ -547,7 +547,7 @@ const TempTable = ({
                 type="button"
                 onClick={handleNextPage}
                 disabled={!canNext}
-                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-200 active:scale-90 ${
                   !canNext
                     ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
                     : "text-primary-600 border-primary-200 bg-primary-50/50 hover:bg-primary-50 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -563,7 +563,7 @@ const TempTable = ({
                 type="button"
                 onClick={handleLastPage}
                 disabled={!canNext}
-                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
+                className={`w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-200 active:scale-90 ${
                   !canNext
                     ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
                     : "text-primary-600 border-primary-200 bg-primary-50/50 hover:bg-primary-50 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
