@@ -78,16 +78,6 @@ const COLUMNS = [
             }>
             Sửa
           </Button>
-
-          <Button
-            buttonAction
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent("deleteNhanVien", { detail: rowData }),
-              )
-            }>
-            Xóa
-          </Button>
         </div>
       );
     },

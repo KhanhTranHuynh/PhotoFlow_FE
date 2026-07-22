@@ -14,4 +14,18 @@ export const NhanVienApi = {
     data: payload,
     signal,
   }),
+  capNhat: (payload = {}, signal) => ({
+    key: "NhanVienCapNhat",
+    apiUrl: "/tai-khoan/cap-nhat",
+    method: "POST",
+    data: payload,
+    signal,
+  }),
+  xoa: (payload = {}, signal) => ({
+    key: "NhanVienXoa",
+    apiUrl: "/tai-khoan/xoa",
+    method: "POST",
+    data: payload,
+    signal,
+  }),
 };

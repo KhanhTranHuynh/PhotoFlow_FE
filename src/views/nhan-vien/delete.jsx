@@ -3,7 +3,8 @@ import { toast } from "react-toastify";
 import Modal from "@/views/component/Modal";
 import Button from "@/components/ui/Button";
 
-import { XoaKhachHang } from "@/store/api/khach-hang";
+import { callApi } from "@/api/callApi";
+import { NhanVienApi } from "@/api/descriptors/nhanVien";
 import { notifyApiByCode } from "@/utils/api-toast";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,15 +18,16 @@ const DeleteKhachHangModal = ({
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (payload) => XoaKhachHang(payload),
+    mutationFn: (payload) =>
+      callApi(NhanVienApi.xoa(payload), { showOverlay: true }),
 
     onSuccess: (res) => {
       notifyApiByCode(res, {
-        successMessage: "Xóa khách hàng thành công",
-        errorMessage: "Xóa khách hàng thất bại",
+        successMessage: "Xóa nhân viên thành công",
+        errorMessage: "Xóa nhân viên thất bại",
 
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["khachhang"] });
+          queryClient.invalidateQueries({ queryKey: ["nhanvien"] });
 
           onDeleted?.(selectedItem);
           onClose?.();
@@ -34,7 +36,7 @@ const DeleteKhachHangModal = ({
     },
 
     onError: (err) => {
-      const msg = err?.response?.data?.message || "Xóa khách hàng thất bại";
+      const msg = err?.response?.data?.message || "Xóa nhân viên thất bại";
       toast.error(msg, { position: "top-right" });
     },
   });

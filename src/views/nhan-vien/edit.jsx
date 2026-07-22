@@ -1,112 +1,76 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 import Modal from "@/views/component/Modal";
 import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
 import { useSelector } from "react-redux";
-
-import { CapNhatKhachHang } from "@/store/api/khach-hang";
-import { DanhSachDanhMucKhachHang } from "@/store/api/danh-muc-khach-hang";
-
+import { callApi } from "@/api/callApi";
+import { NhanVienApi } from "@/api/descriptors/nhanVien";
 import { notifyApiByCode } from "@/utils/api-toast";
 
+// react-query
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const PHONE_REGEX = /^0\d{9}$/;
 
-const INITIAL_FORM = {
-  id_tai_khoan_khach_hang: "",
+const EMPTY_FORM = {
   ho_ten: "",
   so_dien_thoai: "",
-  dia_chi: "",
-  ghi_chu: "",
-  danh_muc_khach_hang_id: "",
-  trang_thai: true,
+  mat_khau: "",
+  email: "",
+  vai_tro: [], // mảng mã vai trò, vd: ["chu_studio"]
   cho_phep_dang_nhap_portal: false,
 };
 
-const buildFormFromItem = (item) => ({
-  id_tai_khoan_khach_hang: item?.id_tai_khoan_khach_hang || "",
-  ho_ten: item?.ten || item?.ho_ten || "",
-  so_dien_thoai: item?.so_dien_thoai || "",
-  dia_chi: item?.dia_chi || "",
-  ghi_chu: item?.ghi_chu || "",
-  danh_muc_khach_hang_id: item?.danh_muc_khach_hang_id || "",
-  trang_thai: item?.trang_thai ?? true,
-  cho_phep_dang_nhap_portal: item?.cho_phep_dang_nhap_portal ?? false,
-});
+// Chuẩn hóa dữ liệu nhân viên (từ API) về đúng shape của form
+const mapNhanVienToForm = (nhanVien) => {
+  if (!nhanVien) return EMPTY_FORM;
 
-const EditKhachHangModal = ({
+  return {
+    ho_ten: nhanVien.ho_ten || "",
+    so_dien_thoai: nhanVien.so_dien_thoai || "",
+    mat_khau: "", // để trống, chỉ gửi lên nếu người dùng nhập mật khẩu mới
+    email: nhanVien.email || "",
+    vai_tro: (nhanVien.vai_tro || []).map((v) =>
+      typeof v === "object" ? v.value || v.ma_vai_tro || v.id_vai_tro : v,
+    ),
+    cho_phep_dang_nhap_portal: !!nhanVien.cho_phep_dang_nhap_portal,
+  };
+};
+
+const UpdateNhanVienModal = ({
   activeModal,
   onClose,
-  selectedItem,
-  categoryOptions = [],
+  vaiTroOptions = [],
+  vaiTroLoading = false,
+  selectedItem, // dữ liệu nhân viên đang chỉnh sửa (truyền từ component cha)
   onUpdated,
 }) => {
   const user = useSelector((state) => state.auth.user);
 
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
-  const [categoryData, setCategoryData] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
 
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (activeModal) {
-      setForm(buildFormFromItem(selectedItem));
+      setForm(mapNhanVienToForm(selectedItem));
       setErrors({});
     }
   }, [activeModal, selectedItem]);
 
-  useEffect(() => {
-    if (!activeModal) return;
-    if (categoryOptions && categoryOptions.length) return;
-
-    const controller = new AbortController();
-
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const res = await DanhSachDanhMucKhachHang(
-          {
-            trang: 1,
-            so_luong: 100,
-            dang_hoat_dong: true,
-            id_studio_local: user?.id_studio_local,
-          },
-          controller.signal,
-        );
-        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
-        const items = res?.data?.du_lieu;
-        setCategoryData(Array.isArray(items) ? items : []);
-      } catch (err) {
-        if (err?.code !== "ERR_CANCELED") {
-          setCategoryData([]);
-        }
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-
-    return () => controller.abort();
-  }, [activeModal, categoryOptions.length, user?.id_studio_local]);
-
-  const categorySelectOptions = useMemo(() => {
-    const src =
-      categoryOptions && categoryOptions.length
-        ? categoryOptions
-        : categoryData;
-
-    return src.map((item) => ({
-      label: item?.ten_hien_thi || item?.ma_danh_muc || "",
-      value: item?.id_danh_muc_khach_hang || item?.ma_danh_muc || "",
-    }));
-  }, [categoryOptions, categoryData]);
+  // vaiTroOptions là danh sách vai trò lấy từ VaiTroApi.danhSach ở component cha,
+  // mỗi item có dạng { id_vai_tro/ma_vai_tro, ten_hien_thi }
+  const vaiTroSelectOptions = useMemo(
+    () =>
+      (vaiTroOptions || []).map((item) => ({
+        label: item?.ten_hien_thi || item?.ma_vai_tro || "",
+        value: item?.ma_vai_tro || item?.id_vai_tro || "",
+      })),
+    [vaiTroOptions],
+  );
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -116,19 +80,27 @@ const EditKhachHangModal = ({
   const validate = () => {
     const nextErrors = {};
 
-    if (!form.id_tai_khoan_khach_hang) {
-      nextErrors.id_tai_khoan_khach_hang = "Thiếu id khách hàng";
-    }
-
     if (!form.ho_ten.trim()) {
       nextErrors.ho_ten = "Vui lòng nhập họ tên";
     }
 
-    if (
-      form.so_dien_thoai.trim() &&
-      !PHONE_REGEX.test(form.so_dien_thoai.trim())
-    ) {
+    if (!form.so_dien_thoai.trim()) {
+      nextErrors.so_dien_thoai = "Vui lòng nhập số điện thoại";
+    } else if (!PHONE_REGEX.test(form.so_dien_thoai.trim())) {
       nextErrors.so_dien_thoai = "Số điện thoại không hợp lệ";
+    }
+
+    // Mật khẩu không bắt buộc khi cập nhật, chỉ validate nếu người dùng có nhập
+    if (form.mat_khau.trim() && form.mat_khau.trim().length < 6) {
+      nextErrors.mat_khau = "Mật khẩu tối thiểu 6 ký tự";
+    }
+
+    if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+      nextErrors.email = "Email không hợp lệ";
+    }
+
+    if (!form.vai_tro || form.vai_tro.length === 0) {
+      nextErrors.vai_tro = "Vui lòng chọn ít nhất một vai trò";
     }
 
     setErrors(nextErrors);
@@ -136,17 +108,20 @@ const EditKhachHangModal = ({
   };
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (payload) => CapNhatKhachHang(payload),
+    mutationFn: (payload) =>
+      callApi(NhanVienApi.capNhat(payload), {
+        showOverlay: true,
+      }),
 
     onSuccess: (res, variables) => {
       notifyApiByCode(res, {
-        successMessage: "Cập nhật khách hàng thành công",
-        errorMessage: "Cập nhật khách hàng thất bại",
+        successMessage: "Cập nhật nhân viên thành công",
+        errorMessage: "Cập nhật nhân viên thất bại",
 
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["khachhang"] });
+          queryClient.invalidateQueries({ queryKey: ["nhanvien"] });
 
-          const updated = res?.data?.item || res?.data || res?.item || null;
+          const updated = res?.data?.item || res?.data || null;
 
           onUpdated?.(updated || variables);
           onClose?.();
@@ -155,29 +130,31 @@ const EditKhachHangModal = ({
     },
 
     onError: (err) => {
-      const msg =
-        err?.response?.data?.message || "Cập nhật khách hàng thất bại";
-      toast.error(msg, { position: "top-right" });
+      const msg = err?.response?.data?.message || "Cập nhật nhân viên thất bại";
+      notifyApiByCode(err?.response?.data, {
+        errorMessage: msg,
+      });
     },
   });
 
   const handleSave = () => {
-    // if (isPending) return;
+    if (isPending) return;
 
-    // const nextErrors = validate();
-    // if (Object.keys(nextErrors).length > 0) return;
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
-      id_tai_khoan_khach_hang: form.id_tai_khoan_khach_hang,
+      id_tai_khoan_nhan_vien:
+        selectedItem?.id ?? selectedItem?.id_tai_khoan_nhan_vien,
+      so_dien_thoai: form.so_dien_thoai.trim(),
       ho_ten: form.ho_ten.trim(),
-      ...(form.so_dien_thoai.trim() && {
-        so_dien_thoai: form.so_dien_thoai.trim(),
-      }),
-      ...(form.dia_chi.trim() && { dia_chi: form.dia_chi.trim() }),
-      ...(form.ghi_chu.trim() && { ghi_chu: form.ghi_chu.trim() }),
-      danh_muc_khach_hang_id: form.danh_muc_khach_hang_id || null,
-      trang_thai: !!form.trang_thai,
+      vai_tro: (Array.isArray(form.vai_tro) ? form.vai_tro : [form.vai_tro])
+        .filter(Boolean)
+        .map((v) => (typeof v === "object" ? v.value : v)),
       cho_phep_dang_nhap_portal: !!form.cho_phep_dang_nhap_portal,
+      ...(form.email.trim() && { email: form.email.trim() }),
+      // Chỉ gửi mật khẩu nếu người dùng thực sự nhập (đổi mật khẩu)
+      ...(form.mat_khau.trim() && { mat_khau: form.mat_khau.trim() }),
     };
 
     mutate(payload);
@@ -187,7 +164,7 @@ const EditKhachHangModal = ({
     <Modal
       activeModal={activeModal}
       onClose={onClose}
-      title="Sửa khách hàng"
+      title="Cập nhật nhân viên"
       className="max-w-3xl"
       centered
       background="#FFFFFF"
@@ -203,7 +180,7 @@ const EditKhachHangModal = ({
           />
 
           <Button
-            text="Lưu"
+            text="Cập nhật"
             icon="heroicons-outline:save"
             buttonSave
             onClick={handleSave}
@@ -217,16 +194,17 @@ const EditKhachHangModal = ({
           <Textinput
             required
             label="Họ tên"
-            placeholder="Nhập họ tên khách hàng"
+            placeholder="Nhập họ tên nhân viên"
             value={form.ho_ten}
             onChange={(e) => setField("ho_ten", e.target.value)}
             error={errors.ho_ten ? { message: errors.ho_ten } : null}
           />
 
           <Textinput
+            required
             phone
             label="Số điện thoại"
-            placeholder="Nhập số điện thoại"
+            placeholder="Nhập số điện thoại đăng nhập"
             value={form.so_dien_thoai}
             onChange={(e) => setField("so_dien_thoai", e.target.value)}
             error={
@@ -235,43 +213,39 @@ const EditKhachHangModal = ({
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Textinput
+            type="password"
+            label="Mật khẩu mới"
+            placeholder="Để trống nếu không đổi mật khẩu"
+            value={form.mat_khau}
+            onChange={(e) => setField("mat_khau", e.target.value)}
+            error={errors.mat_khau ? { message: errors.mat_khau } : null}
+          />
+
+          <Textinput
+            email
+            label="Email"
+            placeholder="Địa chỉ email (không bắt buộc)"
+            value={form.email}
+            onChange={(e) => setField("email", e.target.value)}
+            error={errors.email ? { message: errors.email } : null}
+          />
+        </div>
+
         <div className="grid grid-cols-1 gap-4">
-          <Textarea
-            label="Địa chỉ"
-            placeholder="Nhập địa chỉ khách hàng"
-            value={form.dia_chi}
-            onChange={(e) => setField("dia_chi", e.target.value)}
-          />
-
           <Autocomplete
-            label="Nhóm khách hàng"
+            required
+            multiple
+            label="Vai trò"
             placeholder={
-              loadingCategories
-                ? "Đang tải nhóm khách hàng..."
-                : "-- Chọn nhóm khách hàng --"
+              vaiTroLoading ? "Đang tải vai trò..." : "-- Chọn vai trò --"
             }
-            options={categorySelectOptions}
-            value={form.danh_muc_khach_hang_id || null}
-            onChange={(val) => setField("danh_muc_khach_hang_id", val ?? "")}
+            options={vaiTroSelectOptions}
+            value={form.vai_tro}
+            onChange={(val) => setField("vai_tro", val ?? [])}
+            error={errors.vai_tro ? { message: errors.vai_tro } : null}
           />
-
-          <Textarea
-            label="Ghi chú"
-            placeholder="Nhập ghi chú khách hàng"
-            value={form.ghi_chu}
-            onChange={(e) => setField("ghi_chu", e.target.value)}
-          />
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="trang_thai"
-              checked={form.trang_thai}
-              onChange={(e) => setField("trang_thai", e.target.checked)}
-              className="w-4 h-4"
-            />
-            <label htmlFor="trang_thai">Đang hoạt động</label>
-          </div>
 
           <div className="flex items-center gap-2">
             <input
@@ -293,4 +267,4 @@ const EditKhachHangModal = ({
   );
 };
 
-export default EditKhachHangModal;
+export default UpdateNhanVienModal;
