@@ -146,13 +146,13 @@ const NhanVien = () => {
   const filters = useMemo(
     () => [
       {
-        key: "vai_tro_id",
+        key: "id_vai_tro",
         label: "Vai trò",
         type: "select",
         clearable: true,
         items: vaiTroOptions,
-        itemTitle: "ten",
-        itemValue: "id",
+        itemTitle: "ten_hien_thi",
+        itemValue: "id_vai_tro",
       },
       ...STATIC_FILTERS,
     ],

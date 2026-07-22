@@ -91,6 +91,9 @@ export async function callApi(requestDef, { showOverlay = true } = {}) {
  * @param {boolean} [options.showOverlay=true]
  * @returns {Promise<object[]>} mảng envelope PhanHoiChuan theo đúng thứ tự requestDefs
  */
+
+//parallel = true: gọi song song, trả về mảng kết quả theo đúng thứ tự requestDefs
+//parallel = false: gọi tuần tự, nếu stopOnError=true thì dừng khi gặp lỗi đầu tiên
 export async function callApis(
   requestDefs,
   { parallel = true, stopOnError = false, showOverlay = true } = {},
