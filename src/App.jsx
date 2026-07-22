@@ -94,7 +94,7 @@ import { unlockAudio } from "@/helpers/notificationSound";
 
 import { fetchProfile, setAuthInitialized } from "@/store/redux/auth";
 
-import { ApiRequestManager } from "@/api/ApiRequestManager";
+import { ApiRequestManager } from "@/api/apiRequestManager";
 import GlobalOverlayLoading from "@/components/ui/GlobalOverlayLoading";
 
 // home pages  & dashboard
@@ -198,7 +198,7 @@ function App() {
     // (bật overlay theo từng lần gọi qua showOverlay: true)
     ApiRequestManager.configure({
       maxConcurrentBatches: 10,
-      defaultshowOverlay: true,
+      defaultShowOverlay: true,
       onCallbackError: (error, request) => {
         console.error(
           "[ApiRequestManager callback error]",

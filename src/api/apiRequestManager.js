@@ -40,7 +40,7 @@ function buildApiTag(method, apiUrl) {
 export class ApiRequestManager {
   static config = {
     maxConcurrentBatches: 10,
-    defaultshowOverlay: true,
+    defaultShowOverlay: true,
     defaultHeaders: {},
     onOverlayChange: undefined,
     onCallbackError: undefined,

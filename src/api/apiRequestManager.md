@@ -42,7 +42,7 @@ function App() {
   useEffect(() => {
     ApiRequestManager.configure({
       maxConcurrentBatches: 10,
-      defaultshowOverlay: true,
+      defaultShowOverlay: true,
       onCallbackError: (error, request) => {
         console.error(
           "[ApiRequestManager callback error]",
