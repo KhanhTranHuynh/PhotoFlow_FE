@@ -8,7 +8,8 @@ import Autocomplete from "@/components/ui/Autocomplete";
 import { useSelector } from "react-redux";
 
 import { TaoKhachHangMoi } from "@/store/api/khach-hang";
-import { DanhSachDanhMucKhachHang } from "@/store/api/danh-muc-khach-hang";
+import { callApi } from "@/api/callApi";
+import { DanhMucKhachHangApi } from "@/api/descriptors/danhMucKhachHang";
 
 import { notifyApiByCode } from "@/utils/api-toast";
 
@@ -64,16 +65,16 @@ const AddKhachHangModal = ({
       fetchedCategoriesRef.current = true;
       setLoadingCategories(true);
 
-      // DanhSachDanhMucKhachHang không throw nữa — luôn trả envelope
-      // PhanHoiChuan, phân biệt lỗi bằng "code" thay vì try/catch.
-      const res = await DanhSachDanhMucKhachHang(
-        {
-          trang: 1,
-          so_luong: 100,
-          dang_hoat_dong: true,
-          id_studio_local: user?.id_studio_local,
-        },
-        controller.signal,
+      const res = await callApi(
+        DanhMucKhachHangApi.danhSach(
+          {
+            trang: 1,
+            so_luong: 100,
+            dang_hoat_dong: true,
+            id_studio_local: user?.id_studio_local,
+          },
+          controller.signal,
+        ),
       );
 
       if (res.__networkError && controller.signal.aborted) {

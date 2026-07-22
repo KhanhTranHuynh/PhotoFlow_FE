@@ -23,7 +23,7 @@ const COLUMNS = [
     },
   },
   {
-    Header: "Tên khách hàng",
+    Header: "Tên nhân viên",
     accessor: "ten",
     width: 200,
     Cell: ({ row }) => (
@@ -39,7 +39,7 @@ const COLUMNS = [
     ),
   },
   {
-    Header: "Nhóm khách hàng",
+    Header: "Nhóm nhân viên",
     accessor: "danh_muc_khach_hang_ten",
     width: 180,
     Cell: ({ row }) => (
@@ -272,7 +272,7 @@ const NhanVien = () => {
           <div className="flex flex-col sm:flex-row sm:items-end gap-2">
             {NhanVien_view && (
               <Button
-                text="Thêm khách hàng"
+                text="Thêm nhân viên"
                 icon="heroicons-outline:plus"
                 className="btn-primary bg-primary-600 btn-sm w-full sm:w-auto"
                 onClick={() => setOpenAddModal(true)}
@@ -315,6 +315,8 @@ const NhanVien = () => {
           activeModal={openAddModal}
           onClose={() => setOpenAddModal(false)}
           onCreated={() => setReloadKey((p) => p + 1)}
+          vaiTroOptions={vaiTroOptions}
+          vaiTroLoading={vaiTroLoading}
         />
         <EditNhanVienModal
           activeModal={openEditModal}
@@ -324,6 +326,8 @@ const NhanVien = () => {
           }}
           selectedItem={selectedEditItem}
           onUpdated={() => setReloadKey((p) => p + 1)}
+          vaiTroOptions={vaiTroOptions}
+          vaiTroLoading={vaiTroLoading}
         />
         <DeleteNhanVienModal
           activeModal={openDeleteModal}

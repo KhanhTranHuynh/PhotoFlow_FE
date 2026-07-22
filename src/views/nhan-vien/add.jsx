@@ -1,15 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import React, { useEffect, useMemo, useState } from "react";
 import Modal from "@/views/component/Modal";
 import Button from "@/components/ui/Button";
 import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
-import { useDispatch, useSelector } from "react-redux";
-
-import { TaoKhachHangMoi } from "@/store/api/khach-hang";
-import { DanhSachDanhMucKhachHang } from "@/store/api/danh-muc-khach-hang";
-
+import { useSelector } from "react-redux";
+import { callApis } from "@/api/callApi";
+import { NhanVienApi } from "@/api/descriptors/nhanVien";
 import { notifyApiByCode } from "@/utils/api-toast";
 
 // react-query
@@ -22,86 +19,41 @@ const INITIAL_FORM = {
   so_dien_thoai: "",
   mat_khau: "",
   email: "",
-  so_dien_thoai_lien_he: "",
-  dia_chi: "",
-  ghi_chu: "",
-  danh_muc_khach_hang_id: "",
+  vai_tro: [], // mảng mã vai trò, vd: ["chu_studio"]
   cho_phep_dang_nhap_portal: false,
 };
 
-const AddKhachHangModal = ({
+const AddNhanVienModal = ({
   activeModal,
   onClose,
-  categoryOptions = [],
+  vaiTroOptions = [],
+  vaiTroLoading = false,
   onCreated,
 }) => {
   const user = useSelector((state) => state.auth.user);
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
-  const [categoryData, setCategoryData] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
 
-  const fetchedCategoriesRef = useRef(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (activeModal) {
       setForm(INITIAL_FORM);
       setErrors({});
-      fetchedCategoriesRef.current = false; // reset mỗi khi mở modal
     }
   }, [activeModal]);
 
-  useEffect(() => {
-    if (!activeModal) return;
-    if (categoryOptions && categoryOptions.length) return;
-    if (fetchedCategoriesRef.current) return; // chặn gọi lặp
-
-    const controller = new AbortController();
-
-    const fetchCategories = async () => {
-      try {
-        fetchedCategoriesRef.current = true;
-        setLoadingCategories(true);
-        const res = await DanhSachDanhMucKhachHang(
-          {
-            trang: 1,
-            so_luong: 100,
-            dang_hoat_dong: true,
-            id_studio_local: user?.id_studio_local,
-          },
-          controller.signal,
-        );
-        // API trả về: res.data.du_lieu (mảng danh mục), res.data.phan_trang
-        const items = res?.data?.du_lieu;
-        setCategoryData(Array.isArray(items) ? items : []);
-      } catch (err) {
-        if (err?.code !== "ERR_CANCELED") {
-          setCategoryData([]);
-        }
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-
-    return () => controller.abort();
-    // dùng .length thay vì cả mảng categoryOptions để tránh đổi reference mỗi render
-  }, [activeModal, categoryOptions.length, user?.id_studio_local]);
-
-  const categorySelectOptions = useMemo(() => {
-    const src =
-      categoryOptions && categoryOptions.length
-        ? categoryOptions
-        : categoryData;
-
-    return src.map((item) => ({
-      label: item?.ten_hien_thi || item?.ma_danh_muc || "",
-      value: item?.id_danh_muc_khach_hang || item?.ma_danh_muc || "",
-    }));
-  }, [categoryOptions, categoryData]);
+  // vaiTroOptions là danh sách vai trò lấy từ VaiTroApi.danhSach ở component cha,
+  // mỗi item có dạng { id_vai_tro/ma_vai_tro, ten_hien_thi }
+  const vaiTroSelectOptions = useMemo(
+    () =>
+      (vaiTroOptions || []).map((item) => ({
+        label: item?.ten_hien_thi || item?.ma_vai_tro || "",
+        value: item?.ma_vai_tro || item?.id_vai_tro || "",
+      })),
+    [vaiTroOptions],
+  );
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -131,11 +83,8 @@ const AddKhachHangModal = ({
       nextErrors.email = "Email không hợp lệ";
     }
 
-    if (
-      form.so_dien_thoai_lien_he.trim() &&
-      !PHONE_REGEX.test(form.so_dien_thoai_lien_he.trim())
-    ) {
-      nextErrors.so_dien_thoai_lien_he = "Số điện thoại liên hệ không hợp lệ";
+    if (!form.vai_tro || form.vai_tro.length === 0) {
+      nextErrors.vai_tro = "Vui lòng chọn ít nhất một vai trò";
     }
 
     setErrors(nextErrors);
@@ -143,15 +92,19 @@ const AddKhachHangModal = ({
   };
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (payload) => TaoKhachHangMoi(payload),
+    mutationFn: (payload) =>
+      callApis([NhanVienApi.taoMoi(payload)], {
+        parallel: true,
+        showOverlay: true,
+      }),
 
     onSuccess: (res, variables) => {
       notifyApiByCode(res, {
-        successMessage: "Thêm khách hàng thành công",
-        errorMessage: "Thêm khách hàng thất bại",
+        successMessage: "Thêm nhân viên thành công",
+        errorMessage: "Thêm nhân viên thất bại",
 
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["khachhang"] });
+          queryClient.invalidateQueries({ queryKey: ["nhanvien"] });
 
           const created = res?.data?.item || res?.data || res?.item || null;
 
@@ -162,33 +115,28 @@ const AddKhachHangModal = ({
     },
 
     onError: (err) => {
-      const msg = err?.response?.data?.message || "Thêm khách hàng thất bại";
-      toast.error(msg, { position: "top-right" });
+      const msg = err?.response?.data?.message || "Thêm nhân viên thất bại";
+      notifyApiByCode(err?.response?.data, {
+        errorMessage: msg,
+      });
     },
   });
 
   const handleSave = () => {
-    console.log("handleSave called");
     if (isPending) return;
 
     const nextErrors = validate();
     if (Object.keys(nextErrors).length > 0) return;
 
     const payload = {
-      id_studio_local: user?.id_studio_local,
-      ho_ten: form.ho_ten.trim(),
       so_dien_thoai: form.so_dien_thoai.trim(),
       mat_khau: form.mat_khau.trim(),
-      ...(form.email.trim() && { email: form.email.trim() }),
-      ...(form.so_dien_thoai_lien_he.trim() && {
-        so_dien_thoai_lien_he: form.so_dien_thoai_lien_he.trim(),
-      }),
-      ...(form.dia_chi.trim() && { dia_chi: form.dia_chi.trim() }),
-      ...(form.ghi_chu.trim() && { ghi_chu: form.ghi_chu.trim() }),
-      ...(form.danh_muc_khach_hang_id && {
-        danh_muc_khach_hang_id: form.danh_muc_khach_hang_id,
-      }),
+      ho_ten: form.ho_ten.trim(),
+      vai_tro: (Array.isArray(form.vai_tro) ? form.vai_tro : [form.vai_tro])
+        .filter(Boolean)
+        .map((v) => (typeof v === "object" ? v.value : v)),
       cho_phep_dang_nhap_portal: !!form.cho_phep_dang_nhap_portal,
+      ...(form.email.trim() && { email: form.email.trim() }),
     };
 
     mutate(payload);
@@ -198,7 +146,7 @@ const AddKhachHangModal = ({
     <Modal
       activeModal={activeModal}
       onClose={onClose}
-      title="Thêm khách hàng"
+      title="Thêm nhân viên"
       className="max-w-3xl"
       centered
       background="#FFFFFF"
@@ -228,7 +176,7 @@ const AddKhachHangModal = ({
           <Textinput
             required
             label="Họ tên"
-            placeholder="Nhập họ tên khách hàng"
+            placeholder="Nhập họ tên nhân viên"
             value={form.ho_ten}
             onChange={(e) => setField("ho_ten", e.target.value)}
             error={errors.ho_ten ? { message: errors.ho_ten } : null}
@@ -269,43 +217,17 @@ const AddKhachHangModal = ({
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <Textinput
-            phone
-            label="Số điện thoại liên hệ"
-            placeholder="Số điện thoại liên hệ khác (không bắt buộc)"
-            value={form.so_dien_thoai_lien_he}
-            onChange={(e) => setField("so_dien_thoai_lien_he", e.target.value)}
-            error={
-              errors.so_dien_thoai_lien_he
-                ? { message: errors.so_dien_thoai_lien_he }
-                : null
-            }
-          />
-
-          <Textarea
-            label="Địa chỉ"
-            placeholder="Nhập địa chỉ khách hàng"
-            value={form.dia_chi}
-            onChange={(e) => setField("dia_chi", e.target.value)}
-          />
-
           <Autocomplete
-            label="Nhóm khách hàng"
+            required
+            multiple
+            label="Vai trò"
             placeholder={
-              loadingCategories
-                ? "Đang tải nhóm khách hàng..."
-                : "-- Chọn nhóm khách hàng (không bắt buộc) --"
+              vaiTroLoading ? "Đang tải vai trò..." : "-- Chọn vai trò --"
             }
-            options={categorySelectOptions}
-            value={form.danh_muc_khach_hang_id ?? null}
-            onChange={(val) => setField("danh_muc_khach_hang_id", val ?? null)}
-          />
-
-          <Textarea
-            label="Ghi chú"
-            placeholder="Nhập ghi chú khách hàng"
-            value={form.ghi_chu}
-            onChange={(e) => setField("ghi_chu", e.target.value)}
+            options={vaiTroSelectOptions}
+            value={form.vai_tro}
+            onChange={(val) => setField("vai_tro", val ?? [])}
+            error={errors.vai_tro ? { message: errors.vai_tro } : null}
           />
 
           <div className="flex items-center gap-2">
@@ -328,4 +250,4 @@ const AddKhachHangModal = ({
   );
 };
 
-export default AddKhachHangModal;
+export default AddNhanVienModal;

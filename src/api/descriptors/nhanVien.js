@@ -7,4 +7,11 @@ export const NhanVienApi = {
     params: payload,
     signal,
   }),
+  taoMoi: (payload = {}, signal) => ({
+    key: "NhanVienTaoMoi",
+    apiUrl: "/tai-khoan/tao-moi",
+    method: "POST",
+    data: payload,
+    signal,
+  }),
 };

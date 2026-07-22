@@ -27,12 +27,11 @@ export const notifyApiByCode = (response, options = {}) => {
   // Rule:
   // - code > 0 => success
   // - code <= 0 OR missing/invalid => error
-  const isSuccess = typeof code === "number" && code > 0;
 
   const finalMessage =
-    overrideMessage || message || (isSuccess ? successMessage : errorMessage);
+    overrideMessage || message || (code > 0 ? successMessage : errorMessage);
 
-  if (isSuccess) {
+  if (code > 0) {
     toast.success(finalMessage, toastOptions);
     onSuccess?.(response);
     return "success";
