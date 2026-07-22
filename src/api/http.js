@@ -102,6 +102,7 @@ async function handleAuthCode(body, originalRequest) {
   if (isAuthEndpoint(originalRequest)) return null;
 
   const code = body?.code;
+  const httpStatus = body?.status; // 👈 THÊM DÒNG NÀY
 
   if (isTokenExpiredResponse(code) && !originalRequest?._retry) {
     originalRequest._retry = true;
@@ -118,7 +119,8 @@ async function handleAuthCode(body, originalRequest) {
     return "retry";
   }
 
-  if (isAuthErrorResponse(code, undefined)) {
+  if (isAuthErrorResponse(code, httpStatus)) {
+    // 👈 SỬA DÒNG NÀY
     clearTokens();
     redirectToLogin();
     return "redirected";
