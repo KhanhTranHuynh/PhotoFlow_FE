@@ -62,7 +62,8 @@ const getPaginationItems = ({ totalPages, currentPage, siblingCount = 1 }) => {
 const TempTable = ({
   columns = [],
   data = [],
-  initialPageSize = 6,
+  initialPageSize = 10,
+  pageSizeOptions = [10, 20, 50, 100],
   showPagination = true,
   enableSorting = false,
   paginationMode = "client", // 'client' | 'server'
@@ -166,6 +167,21 @@ const TempTable = ({
 
   const displayPageIndex = isServerPagination ? currentPage - 1 : pageIndex;
 
+  const effectivePageSize = isServerPagination
+    ? resolvedPageSize
+    : tablePageSize;
+
+  const totalCount = isServerPagination
+    ? Number(totalRecords) || 0
+    : rows.length;
+
+  const startIdx =
+    totalCount === 0 ? 0 : displayPageIndex * effectivePageSize + 1;
+  const endIdx = Math.min(
+    (displayPageIndex + 1) * effectivePageSize,
+    totalCount,
+  );
+
   // ── Reset page khi data đổi (client mode) ──
   const prevDataRef = useRef(memoData);
 
@@ -221,6 +237,19 @@ const TempTable = ({
     }
   };
 
+  const handleFirstPage = () => handleGotoPage(0);
+  const handleLastPage = () =>
+    handleGotoPage((displayPageOptions.length || 1) - 1);
+
+  const handlePageSizeChange = (e) => {
+    const size = Number(e.target.value);
+    if (isServerPagination) {
+      onPageSizeChange?.(size);
+    } else {
+      setPageSize(size);
+    }
+  };
+
   const getServerKey = (column) => column.serverSortKey || column.id;
 
   /** Trạng thái sort hiện tại của 1 column: "ASC" | "DESC" | null */
@@ -270,7 +299,7 @@ const TempTable = ({
             <table
               className="min-w-full divide-y divide-slate-100 table-fixed dark:divide-slate-700"
               {...getTableProps()}>
-              <thead className="bg-slate-200 dark:bg-slate-700">
+              <thead className="bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
                 {headerGroups.map((headerGroup) => {
                   const { key: headerGroupKey, ...headerGroupProps } =
                     headerGroup.getHeaderGroupProps();
@@ -304,9 +333,10 @@ const TempTable = ({
                               cursor: isSortable ? "pointer" : "default",
                               userSelect: isSortable ? "none" : undefined,
                             }}
-                            className={resolveClassName(headerClassName, {
-                              column,
-                            })}
+                            className={`py-3.5 px-4 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400 ${resolveClassName(
+                              headerClassName,
+                              { column },
+                            )}`}
                             onClick={
                               isSortable
                                 ? () => handleHeaderClick(column)
@@ -326,7 +356,7 @@ const TempTable = ({
                                 <span
                                   className={`
                                     transition-all duration-200 flex items-center
-                                    ${sortState ? "text-primary-500" : "text-slate-400"}
+                                    ${sortState ? "text-amber-700" : "text-slate-400"}
                                   `}>
                                   <Icon
                                     icon={
@@ -334,7 +364,7 @@ const TempTable = ({
                                         ? "heroicons-outline:chevron-up"
                                         : sortState === "DESC"
                                           ? "heroicons-outline:chevron-down"
-                                          : "heroicons-outline:selector"
+                                          : "heroicons-outline:chevron-down"
                                     }
                                     className="w-3.5 h-3.5"
                                   />
@@ -350,7 +380,7 @@ const TempTable = ({
               </thead>
 
               <tbody
-                className="bg-white divide-y divide-slate-100 dark:bg-slate-800 dark:divide-slate-700"
+                className="bg-white divide-y divide-slate-50 dark:bg-slate-800 dark:divide-slate-700"
                 {...getTableBodyProps()}>
                 {tableRows.length === 0 ? (
                   <tr>
@@ -390,10 +420,10 @@ const TempTable = ({
                                   ? `${cell.column.minWidth}px`
                                   : undefined,
                               }}
-                              className={resolveClassName(cellClassName, {
-                                cell,
-                                row,
-                              })}>
+                              className={`py-3.5 px-4 text-sm text-slate-800 dark:text-slate-200 ${resolveClassName(
+                                cellClassName,
+                                { cell, row },
+                              )}`}>
                               {cell.render("Cell")}
                             </td>
                           );
@@ -409,28 +439,71 @@ const TempTable = ({
       </div>
 
       {showPagination ? (
-        <div className="md:flex md:space-y-0 space-y-5 justify-center mt-6 items-center">
-          <ul className="flex items-center space-x-3 rtl:space-x-reverse">
-            {/* Prev */}
-            <li className="text-xl leading-4 rtl:rotate-180">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-4">
+          {/* Left: page size + showing text */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <select
+                value={effectivePageSize}
+                onChange={handlePageSizeChange}
+                className="appearance-none rounded-full border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 pl-4 pr-8 py-1.5 text-sm text-slate-600 outline-none cursor-pointer">
+                {pageSizeOptions.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+              <Icon
+                icon="heroicons-outline:chevron-down"
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"
+              />
+            </div>
+
+            <span className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+              Showing {startIdx} - {endIdx} of {totalCount}
+            </span>
+          </div>
+
+          {/* Right: pagination controls */}
+          <ul className="flex items-center gap-1.5">
+            <li>
               <button
-                className={`${
+                type="button"
+                onClick={handleFirstPage}
+                disabled={!canPrev}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
                   !canPrev
-                    ? "opacity-50 cursor-not-allowed text-slate-400"
-                    : "text-primary-600 dark:text-primary-300"
-                }`}
+                    ? "text-slate-300 cursor-not-allowed"
+                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}>
+                <Icon
+                  icon="heroicons-outline:chevron-double-left"
+                  className="text-sm"
+                />
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
                 onClick={handlePreviousPage}
-                disabled={!canPrev}>
-                <Icon icon="heroicons-outline:chevron-left" />
+                disabled={!canPrev}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                  !canPrev
+                    ? "text-slate-300 cursor-not-allowed"
+                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                }`}>
+                <Icon
+                  icon="heroicons-outline:chevron-left"
+                  className="text-sm"
+                />
               </button>
             </li>
 
-            {/* Pages */}
             {paginationItems.map((item, idx) => {
               if (item === "...") {
                 return (
                   <li key={`dots-${idx}`}>
-                    <span className="flex h-6 min-w-6 px-2 items-center justify-center text-slate-500">
+                    <span className="w-8 h-8 flex items-center justify-center text-sm text-slate-400">
                       ...
                     </span>
                   </li>
@@ -442,33 +515,50 @@ const TempTable = ({
               return (
                 <li key={item}>
                   <button
+                    type="button"
                     aria-current="page"
-                    className={`
-                      ${
-                        pageIdx === displayPageIndex
-                          ? "bg-primary-600 dark:bg-primary-500 text-white font-medium"
-                          : "bg-slate-100 dark:bg-slate-700 dark:text-slate-400 text-slate-900 font-normal"
-                      }
-                      text-sm rounded leading-[16px] flex h-6 min-w-6 px-2 items-center justify-center transition-all duration-150
-                    `}
-                    onClick={() => handleGotoPage(pageIdx)}>
+                    onClick={() => handleGotoPage(pageIdx)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                      pageIdx === displayPageIndex
+                        ? "bg-amber-700 text-white"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    }`}>
                     {item}
                   </button>
                 </li>
               );
             })}
 
-            {/* Next */}
-            <li className="text-xl leading-4 rtl:rotate-180">
+            <li>
               <button
-                className={`${
-                  !canNext
-                    ? "opacity-50 cursor-not-allowed text-slate-400"
-                    : "text-primary-600 dark:text-primary-300"
-                }`}
+                type="button"
                 onClick={handleNextPage}
-                disabled={!canNext}>
-                <Icon icon="heroicons-outline:chevron-right" />
+                disabled={!canNext}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                  !canNext
+                    ? "text-slate-300 cursor-not-allowed"
+                    : "text-amber-700 hover:bg-amber-50 dark:hover:bg-slate-700"
+                }`}>
+                <Icon
+                  icon="heroicons-outline:chevron-right"
+                  className="text-sm"
+                />
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={handleLastPage}
+                disabled={!canNext}
+                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                  !canNext
+                    ? "text-slate-300 cursor-not-allowed"
+                    : "text-amber-700 hover:bg-amber-50 dark:hover:bg-slate-700"
+                }`}>
+                <Icon
+                  icon="heroicons-outline:chevron-double-right"
+                  className="text-sm"
+                />
               </button>
             </li>
           </ul>
