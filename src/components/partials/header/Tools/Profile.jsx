@@ -62,7 +62,7 @@ const Profile = ({ alwaysShowName = false }) => {
       action: () => {
         dispatch(logoutWithApi()).then((action) => {
           if (logoutWithApi.fulfilled.match(action)) {
-            navigate("/");
+            navigate("/login");
           }
         });
       },

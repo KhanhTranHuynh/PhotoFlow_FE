@@ -93,15 +93,15 @@ const Sidebar = () => {
                   {avatarText}
                 </div>
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary-500 text-white whitespace-nowrap">
-                  {user.ten_vai_tro[0]}
+                  {user?.ten_vai_tro?.[0]}
                 </span>
               </div>
               <div className="min-w-0 pt-1">
                 <div className="text-base font-semibold text-slate-800 dark:text-white truncate">
-                  {user.ho_ten}
+                  {user?.ho_ten}
                 </div>
                 <div className="text-sm text-slate-400 dark:text-slate-300 truncate mt-1">
-                  {user.so_dien_thoai}
+                  {user?.so_dien_thoai}
                 </div>
               </div>
             </div>
