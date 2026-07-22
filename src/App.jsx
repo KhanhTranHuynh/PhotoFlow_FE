@@ -198,7 +198,7 @@ function App() {
     // (bật overlay theo từng lần gọi qua showOverlay: true)
     ApiRequestManager.configure({
       maxConcurrentBatches: 10,
-      defaultShowOverlay: false,
+      defaultshowOverlay: true,
       onCallbackError: (error, request) => {
         console.error(
           "[ApiRequestManager callback error]",

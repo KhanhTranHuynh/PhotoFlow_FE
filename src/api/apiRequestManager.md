@@ -42,7 +42,7 @@ function App() {
   useEffect(() => {
     ApiRequestManager.configure({
       maxConcurrentBatches: 10,
-      defaultShowOverlay: false,
+      defaultshowOverlay: true,
       onCallbackError: (error, request) => {
         console.error(
           "[ApiRequestManager callback error]",
@@ -140,14 +140,14 @@ const { results, successCount, errorCount } =
 
 ## 7. Khi nào dùng gì — quy tắc quyết định nhanh
 
-| Tình huống                                                              | Dùng                                                                |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Nhiều API độc lập, muốn tải nhanh cùng lúc (dashboard, nhiều danh sách) | `parallel: true`                                                    |
-| API sau phụ thuộc kết quả API trước (tạo cha → tạo con)                 | `parallel: false` + `dataFactory`                                   |
-| Muốn dừng ngay khi 1 bước lỗi trong chuỗi tuần tự                       | `parallel: false` + `stopOnError: true`                             |
-| Thao tác quan trọng, cần khóa toàn bộ UI (submit, checkout)             | `showOverlay: true` ở cấp **batch**                                 |
-| Batch không cần khóa UI chung, nhưng 1 API trong đó cần loading riêng   | `showOverlay: false` ở batch + `showOverlay: true` ở **request** đó |
-| Gọi API trong `useEffect`                                               | luôn kèm `signal` từ `AbortController`, `abort()` trong cleanup     |
+| Tình huống                                                              | Dùng                                                               |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Nhiều API độc lập, muốn tải nhanh cùng lúc (dashboard, nhiều danh sách) | `parallel: true`                                                   |
+| API sau phụ thuộc kết quả API trước (tạo cha → tạo con)                 | `parallel: false` + `dataFactory`                                  |
+| Muốn dừng ngay khi 1 bước lỗi trong chuỗi tuần tự                       | `parallel: false` + `stopOnError: true`                            |
+| Thao tác quan trọng, cần khóa toàn bộ UI (submit, checkout)             | `showOverlay: true` ở cấp **batch**                                |
+| Batch không cần khóa UI chung, nhưng 1 API trong đó cần loading riêng   | `showOverlay: true` ở batch + `showOverlay: true` ở **request** đó |
+| Gọi API trong `useEffect`                                               | luôn kèm `signal` từ `AbortController`, `abort()` trong cleanup    |
 
 ## 8. File ví dụ đầy đủ
 
@@ -264,7 +264,7 @@ const KhachHangPage = () => {
   const handleDeleteCustomer = async (id) => {
     const { results } = await ApiRequestManager.sendRequests({
       parallel: true,
-      showOverlay: false,
+      showOverlay: true,
       apiList: [
         {
           apiUrl: `/api/khach-hang/${id}`,

@@ -1,4 +1,3 @@
-// src/components/GlobalOverlayLoading.jsx
 import React from "react";
 
 const GlobalOverlayLoading = () => {
