@@ -259,6 +259,23 @@ const NhanVien = () => {
               }}
             />
           </div>
+          {/* FILTER */}
+          <div>
+            <FilterTable
+              filters={filters}
+              modelValue={filterValues}
+              onUpdateModelValue={(next) => {
+                setPageIndex(0);
+                setFilterValues(next);
+              }}
+              onClearFilters={() => {
+                setPageIndex(0);
+                setFilterValues({});
+              }}
+              hideClearButton
+              hideLabels
+            />
+          </div>
           <div className="flex flex-col sm:flex-row sm:items-end gap-2">
             {NhanVien_view && (
               <Button
@@ -269,22 +286,6 @@ const NhanVien = () => {
               />
             )}
           </div>
-        </div>
-
-        {/* FILTER */}
-        <div className="mb-4">
-          <FilterTable
-            filters={filters}
-            modelValue={filterValues}
-            onUpdateModelValue={(next) => {
-              setPageIndex(0);
-              setFilterValues(next);
-            }}
-            onClearFilters={() => {
-              setPageIndex(0);
-              setFilterValues({});
-            }}
-          />
         </div>
 
         <TempTable
