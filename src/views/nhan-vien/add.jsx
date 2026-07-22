@@ -5,7 +5,7 @@ import Textinput from "@/components/ui/Textinput";
 import Textarea from "@/components/ui/Textarea";
 import Autocomplete from "@/components/ui/Autocomplete";
 import { useSelector } from "react-redux";
-import { callApis } from "@/api/callApi";
+import { callApi } from "@/api/callApi";
 import { NhanVienApi } from "@/api/descriptors/nhanVien";
 import { notifyApiByCode } from "@/utils/api-toast";
 
@@ -93,8 +93,7 @@ const AddNhanVienModal = ({
 
   const { mutate, isPending } = useMutation({
     mutationFn: (payload) =>
-      callApis([NhanVienApi.taoMoi(payload)], {
-        parallel: true,
+      callApi(NhanVienApi.taoMoi(payload), {
         showOverlay: true,
       }),
 
@@ -106,7 +105,7 @@ const AddNhanVienModal = ({
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["nhanvien"] });
 
-          const created = res?.data?.item || res?.data || res?.item || null;
+          const created = res?.data?.item || res?.data || null;
 
           onCreated?.(created || variables);
           onClose?.();

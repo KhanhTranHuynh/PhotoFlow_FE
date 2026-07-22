@@ -21,7 +21,7 @@ export const notifyApiByCode = (response, options = {}) => {
     message: overrideMessage,
     toastOptions = DEFAULT_POSITION,
   } = options;
-
+  console.log("notifyApiByCode response:", response);
   const { code, message } = getApiResultMeta(response);
 
   // Rule:
