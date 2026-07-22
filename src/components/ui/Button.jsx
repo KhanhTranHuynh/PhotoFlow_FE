@@ -38,7 +38,7 @@ function Button({
     case buttonSave:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -51,7 +51,7 @@ function Button({
     case xacNhanDon:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -64,7 +64,7 @@ function Button({
     case tuChoi:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -77,7 +77,7 @@ function Button({
     case chinhSuaDon:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -90,7 +90,7 @@ function Button({
     case inHoaDonKhachHang:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -103,7 +103,7 @@ function Button({
     case huyDonHang:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -116,7 +116,7 @@ function Button({
     case xoaDonHang:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -129,7 +129,7 @@ function Button({
     case inHoaDonSanXuat:
       finalClass = `
       px-8 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-white
       font-medium
@@ -142,7 +142,7 @@ function Button({
     case buttonAdd:
       finalClass = `
       btn-sm
-      rounded-[4px]
+      rounded-[4px]!
       gap-2
       text-white
       bg-[rgba(13,110,253,1)]
@@ -153,7 +153,7 @@ function Button({
     case buttonAction:
       finalClass = `
       px-4 py-[6px]
-      rounded-[3px]
+      rounded-[3px]!
       text-xs
       text-slate-600
       bg-[rgba(240,240,240,1)]
@@ -165,7 +165,7 @@ function Button({
     case buttonClose:
       finalClass = `
       px-6 py-[10px]
-      rounded-[12px]
+      rounded-xl
       gap-2
       text-slate-700
       bg-[rgba(231,232,233,1)]
@@ -177,11 +177,11 @@ function Button({
     case buttonLock:
       finalClass = `
       px-6 py-[10px]
-      rounded-[16px]
+      rounded-[16px]!
       gap-2
       text-slate-700
-      bg-[rgba(133, 83, 0, 1)]
-      hover:bg-[rgb(119, 73, 0)]
+      bg-[rgba(133,83,0,1)]
+      hover:bg-[rgb(119,73,0)]
       transition
     `;
       break;
@@ -189,7 +189,7 @@ function Button({
     case buttonCancelLock:
       finalClass = `
       px-6 py-[10px]
-      rounded-[16px]
+      rounded-[16px]!
       gap-2
       text-slate-700
       bg-[rgba(231,232,233,1)]
@@ -213,7 +213,7 @@ function Button({
         <button
           type={type}
           onClick={onClick}
-          className={`btn btn inline-flex justify-center items-center ${
+          className={`btn rounded-xl inline-flex justify-center items-center ${
             isLoading ? "pointer-events-none" : ""
           }
           ${disabled ? "opacity-40 cursor-not-allowed" : ""}
@@ -266,7 +266,7 @@ function Button({
       {!link && div && (
         <div
           onClick={onClick}
-          className={`btn btn inline-flex justify-center items-center ${
+          className={`btn rounded-xl inline-flex justify-center items-center ${
             isLoading ? "pointer-events-none" : ""
           }
           ${disabled ? "opacity-40 cursor-not-allowed" : ""}
@@ -319,7 +319,7 @@ function Button({
       {link && !div && (
         <Link
           to={link}
-          className={`btn btn inline-flex justify-center items-center ${
+          className={`btn rounded-xl inline-flex justify-center items-center ${
             isLoading ? "pointer-events-none" : ""
           }
           ${disabled ? "opacity-40 cursor-not-allowed" : ""}

@@ -115,6 +115,9 @@ const Autocomplete = ({
       ? "right-14"
       : "right-8";
 
+  // ── Bo góc mặc định dùng chung ────────────────────────────
+  const roundedClass = "rounded-xl";
+
   return (
     <div
       className={`fromGroup ${errorMessage ? "has-error" : ""} ${className}`}>
@@ -135,14 +138,14 @@ const Autocomplete = ({
         <div
           className={`relative flex items-center ${
             isGrayVariant
-              ? `overflow-hidden rounded-md border ${
+              ? `overflow-hidden ${roundedClass} border ${
                   errorMessage ? "border-danger-500" : "border-slate-300"
                 } bg-[#efefef]`
               : showFloatingLabel
-                ? `overflow-visible rounded-md border ${
+                ? `overflow-visible ${roundedClass} border ${
                     errorMessage ? "border-danger-500" : "border-slate-300"
                   }`
-                : ""
+                : roundedClass
           }`}>
           {showFloatingLabel && (
             <label
@@ -163,7 +166,7 @@ const Autocomplete = ({
           <input
             ref={inputRef}
             type="text"
-            className={`form-control py-2 w-full ${inputRightPadding} ${inputClassName}
+            className={`form-control ${roundedClass} py-2 w-full ${inputRightPadding} ${inputClassName}
               ${errorMessage ? "has-error" : ""}
               ${
                 isGrayVariant
@@ -258,7 +261,7 @@ const Autocomplete = ({
           <div
             ref={menuRef}
             onScroll={handleMenuScroll} // ← lắng nghe scroll
-            className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-base ring-1 ring-slate-900/5 dark:bg-slate-800">
+            className={`absolute z-50 mt-1 max-h-60 w-full overflow-auto ${roundedClass} bg-white py-1 text-sm shadow-base ring-1 ring-slate-900/5 dark:bg-slate-800`}>
             {filtered.length === 0 && !loading ? (
               <div className="px-3 py-2 text-slate-500">{emptyText}</div>
             ) : (

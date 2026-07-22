@@ -38,7 +38,7 @@ const SearchBar = ({
 
   return (
     <div
-      className={`flex items-center rounded-full border border-slate-200 bg-white overflow-hidden h-9 ${className}`}>
+      className={`flex items-center rounded-xl border border-slate-200 bg-white overflow-hidden h-9 ${className}`}>
       {/* Icon kính lúp */}
       <span className="pl-3 pr-1.5 text-slate-400 flex items-center">
         <Icon icon="heroicons-outline:search" className="text-sm" />

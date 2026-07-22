@@ -248,6 +248,7 @@ const NhanVien = () => {
       <Card>
         {/* HEADER */}
         <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3 mb-4">
+          {/* SEARCH */}
           <div className="w-full xl:w-[550px] xl:flex-shrink-0">
             <SearchTable
               className="w-full xl:w-[550px]"
@@ -259,29 +260,31 @@ const NhanVien = () => {
               }}
             />
           </div>
-          {/* FILTER */}
-          <div>
-            <FilterTable
-              filters={filters}
-              modelValue={filterValues}
-              onUpdateModelValue={(next) => {
-                setPageIndex(0);
-                setFilterValues(next);
-              }}
-              onClearFilters={() => {
-                setPageIndex(0);
-                setFilterValues({});
-              }}
-              hideClearButton
-              hideLabels
-            />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-end gap-2">
+
+          {/* FILTER + BUTTON gộp chung 1 nhóm, luôn nằm cạnh nhau */}
+          <div className="flex flex-col sm:flex-row sm:items-end xl:flex-1 xl:justify-end gap-3 w-full xl:w-auto">
+            <div className="w-full sm:w-auto sm:min-w-[280px]">
+              <FilterTable
+                filters={filters}
+                modelValue={filterValues}
+                onUpdateModelValue={(next) => {
+                  setPageIndex(0);
+                  setFilterValues(next);
+                }}
+                onClearFilters={() => {
+                  setPageIndex(0);
+                  setFilterValues({});
+                }}
+                hideClearButton
+                hideLabels
+              />
+            </div>
+
             {NhanVien_view && (
               <Button
                 text="Thêm nhân viên"
                 icon="heroicons-outline:plus"
-                className="btn-primary bg-primary-600 btn-sm w-full sm:w-auto"
+                className="btn-primary bg-primary-600 btn-sm w-full sm:w-auto flex-shrink-0"
                 onClick={() => setOpenAddModal(true)}
               />
             )}

@@ -427,6 +427,9 @@ const Textinput = ({
     onBlur && onBlur(e);
   };
 
+  // ─── Base rounded class dùng chung cho MỌI input ───────────────
+  const roundedClass = "rounded-xl";
+
   // ─── Render ─────────────────────────────────────────────────────
   return (
     <div
@@ -456,7 +459,7 @@ const Textinput = ({
             readOnly={readonly}
             error={combinedError?.message || ""}
             className="w-full"
-            inputClassName={className}
+            inputClassName={`${roundedClass} ${className}`}
             {...rest}
           />
         )}
@@ -476,7 +479,7 @@ const Textinput = ({
             readOnly={readonly}
             id={id}
             maxLength={10}
-            className={`form-control py-2 ${className} ${
+            className={`form-control ${roundedClass} py-2 ${className} ${
               combinedError ? "has-error" : ""
             }`}
             style={inputStyle}
@@ -497,7 +500,7 @@ const Textinput = ({
             disabled={disabled}
             readOnly={readonly}
             id={id}
-            className={`form-control py-2 ${className} ${
+            className={`form-control ${roundedClass} py-2 ${className} ${
               combinedError ? "has-error" : ""
             }`}
             style={inputStyle}
@@ -517,7 +520,7 @@ const Textinput = ({
             {...moneyExtraProps}
             className={`${
               error ? "has-error" : " "
-            } form-control py-2 text-right ${className}`}
+            } form-control ${roundedClass} py-2 text-right ${className}`}
             placeholder={placeholder}
             readOnly={readonly}
             disabled={disabled}
@@ -537,7 +540,7 @@ const Textinput = ({
             {...(value !== undefined ? { value } : { defaultValue })}
             className={`${
               combinedError ? "has-error" : " "
-            } form-control py-2 ${className}`}
+            } form-control ${roundedClass} py-2 ${className}`}
             placeholder={placeholder}
             readOnly={readonly}
             disabled={disabled}
@@ -558,7 +561,7 @@ const Textinput = ({
             onBlur={handlePlainBlur}
             className={`${
               error ? " has-error" : " "
-            } form-control py-2 ${className}`}
+            } form-control ${roundedClass} py-2 ${className}`}
             placeholder={placeholder}
             readOnly={readonly}
             disabled={disabled}
@@ -584,7 +587,7 @@ const Textinput = ({
               {...(value !== undefined ? { value } : { defaultValue })}
               className={`${
                 error ? " has-error" : " "
-              } form-control py-2 ${className}  `}
+              } form-control ${roundedClass} py-2 ${className}  `}
               placeholder={placeholder}
               readOnly={readonly}
               disabled={disabled}
@@ -609,7 +612,7 @@ const Textinput = ({
               type={resolvedType}
               {...rest}
               {...(value !== undefined ? { value } : { defaultValue })}
-              className={`form-control py-2 ${className}`}
+              className={`form-control ${roundedClass} py-2 ${className}`}
               placeholder={placeholder}
               readOnly={readonly}
               disabled={disabled}
@@ -637,7 +640,7 @@ const Textinput = ({
               options={options}
               className={`${
                 error ? " has-error" : " "
-              } form-control py-2 ${className}  `}
+              } form-control ${roundedClass} py-2 ${className}  `}
               onFocus={onFocus}
               id={id}
               readOnly={readonly}
@@ -664,7 +667,7 @@ const Textinput = ({
               options={options}
               className={`${
                 error ? " has-error" : " "
-              } form-control py-2 ${className}  `}
+              } form-control ${roundedClass} py-2 ${className}  `}
               onFocus={onFocus}
               id={id}
               readOnly={readonly}
