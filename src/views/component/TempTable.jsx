@@ -484,10 +484,10 @@ const TempTable = ({
                 type="button"
                 onClick={handleFirstPage}
                 disabled={!canPrev}
-                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
                   !canPrev
-                    ? "text-slate-300 cursor-not-allowed"
-                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
+                    : "text-slate-500 border-slate-200 bg-white hover:bg-slate-100 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                 }`}>
                 <Icon
                   icon="heroicons-outline:chevron-double-left"
@@ -500,10 +500,10 @@ const TempTable = ({
                 type="button"
                 onClick={handlePreviousPage}
                 disabled={!canPrev}
-                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
                   !canPrev
-                    ? "text-slate-300 cursor-not-allowed"
-                    : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
+                    : "text-slate-500 border-slate-200 bg-white hover:bg-slate-100 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                 }`}>
                 <Icon
                   icon="heroicons-outline:chevron-left"
@@ -531,10 +531,10 @@ const TempTable = ({
                     type="button"
                     aria-current="page"
                     onClick={() => handleGotoPage(pageIdx)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all duration-200 active:scale-90 ${
                       pageIdx === displayPageIndex
-                        ? "bg-amber-700 text-white"
-                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                        ? "bg-primary-600 text-white shadow-sm hover:brightness-110 hover:scale-105"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 hover:scale-110 dark:hover:bg-slate-700"
                     }`}>
                     {item}
                   </button>
@@ -547,10 +547,10 @@ const TempTable = ({
                 type="button"
                 onClick={handleNextPage}
                 disabled={!canNext}
-                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
                   !canNext
-                    ? "text-slate-300 cursor-not-allowed"
-                    : "text-amber-700 hover:bg-amber-50 dark:hover:bg-slate-700"
+                    ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
+                    : "text-primary-600 border-primary-200 bg-primary-50/50 hover:bg-primary-50 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                 }`}>
                 <Icon
                   icon="heroicons-outline:chevron-right"
@@ -563,10 +563,10 @@ const TempTable = ({
                 type="button"
                 onClick={handleLastPage}
                 disabled={!canNext}
-                className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all duration-200 active:scale-90 ${
                   !canNext
-                    ? "text-slate-300 cursor-not-allowed"
-                    : "text-amber-700 hover:bg-amber-50 dark:hover:bg-slate-700"
+                    ? "text-slate-300 border-slate-100 bg-slate-50 cursor-not-allowed"
+                    : "text-primary-600 border-primary-200 bg-primary-50/50 hover:bg-primary-50 hover:scale-110 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                 }`}>
                 <Icon
                   icon="heroicons-outline:chevron-double-right"
